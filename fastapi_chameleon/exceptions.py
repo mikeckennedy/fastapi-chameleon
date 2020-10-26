@@ -1,0 +1,2 @@
+class FastAPIChameleonException(Exception):
+    pass
