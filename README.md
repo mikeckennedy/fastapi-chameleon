@@ -17,6 +17,9 @@ You may want to fork this repo and then use your URL until this is more final.
 This is easy to use. Just create a folder within your web app to hold the templates such as:
 
 ```
+├── main.py
+├── views.py
+│
 ├── templates
 │   ├── home
 │   │   └── index.pt
@@ -25,7 +28,7 @@ This is easy to use. Just create a folder within your web app to hold the templa
 
 ```
 
-In the app startup, tell library about the folder you wish to use:
+In the app startup, tell the library about the folder you wish to use:
 
 ```python
 import os
