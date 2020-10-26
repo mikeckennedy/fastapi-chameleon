@@ -59,5 +59,5 @@ async def home_post(request: Request):
 The view method should return a `dict` to be passed as variables/values to the template. 
 
 If a `fastapi.Response` is returned, the template is skipped and the response along with status_code and
-other values is directly passed through. This is common for redirect and other error responses not meant
+other values is directly passed through. This is common for redirects and error responses not meant
 for this page template.
