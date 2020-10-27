@@ -4,7 +4,7 @@ from functools import wraps
 from typing import Optional
 
 import fastapi
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, FileSystemLoader, Template, select_autoescape
 
 from fastapi_jinja.exceptions import FastAPIJinjaException
 
@@ -27,7 +27,9 @@ def global_init(template_folder: str, auto_reload=False, cache_init=True):
         raise FastAPIJinjaException(msg)
 
     template_path = template_folder
-    __env = Environment(loader=FileSystemLoader(template_folder))
+    __env = Environment(
+        loader=FileSystemLoader(template_folder), autoescape=select_autoescape(["html"])
+    )
 
 
 def clear():
@@ -41,7 +43,8 @@ def render(template_file: str, **template_data):
         raise Exception("You must call global_init() before rendering templates.")
 
     page: Template = __env.get_template(template_file)
-    return page.render(encoding="utf-8", **template_data)
+    rendered_page = page.render(template_data)
+    return rendered_page
 
 
 def response(
