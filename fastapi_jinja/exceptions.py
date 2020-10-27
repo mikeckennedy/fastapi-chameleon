@@ -1,0 +1,2 @@
+class FastAPIJinjaException(Exception):
+    pass

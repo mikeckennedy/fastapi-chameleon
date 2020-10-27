@@ -5,7 +5,7 @@ import fastapi
 # noinspection PyPackageRequirements
 import pytest
 
-import fastapi_chameleon as fc
+import fastapi_jinja as fj
 
 here = os.path.dirname(__file__)
 folder = os.path.join(here, 'templates')
@@ -13,7 +13,7 @@ folder = os.path.join(here, 'templates')
 
 def test_cannot_decorate_missing_template():
     with pytest.raises(ValueError):
-        @fc.template('home/missing.pt')
+        @fj.template('home/missing.j2')
         def view_method():
             return {}
 
@@ -21,7 +21,7 @@ def test_cannot_decorate_missing_template():
 
 
 def test_can_decorate_dict_sync_method():
-    @fc.template('home/index.pt')
+    @fj.template('home/index.j2')
     def view_method(a, b, c):
         return {'a': a, 'b': b, 'c': c}
 
@@ -31,7 +31,7 @@ def test_can_decorate_dict_sync_method():
 
 
 def test_can_decorate_dict_async_method():
-    @fc.template('home/index.pt')
+    @fj.template('home/index.j2')
     async def view_method(a, b, c):
         return {'a': a, 'b': b, 'c': c}
 
@@ -41,7 +41,7 @@ def test_can_decorate_dict_async_method():
 
 
 def test_direct_response_pass_through():
-    @fc.template('home/index.pt')
+    @fj.template('home/index.j2')
     def view_method(a, b, c):
         return fastapi.Response(content='abc', status_code=418)
 

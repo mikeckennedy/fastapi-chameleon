@@ -2,8 +2,7 @@ import io
 import os
 import re
 
-from setuptools import find_packages
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 def read(filename):
@@ -26,15 +25,15 @@ with open(requirements_txt, 'r', encoding='utf-8') as fin:
     ]
 
 setup(
-    name="fastapi-chameleon",
+    name="fastapi-jinja",
     version="0.1.0",
-    url="https://github.com/mikeckennedy/fastapi-chameleon",
+    url="https://github.com/ageekinside/fastapi-jinja",
     license='MIT',
 
-    author="Michael Kennedy",
-    author_email="michael@talkpython.fm",
+    author="Marc Brooks",
+    author_email="marcwbrooks@gmail.com",
 
-    description="Adds integration of the Chameleon template language to FastAPI.",
+    description="Adds integration of the Jinja2 template language to FastAPI.",
     long_description=read("README.md"),
 
     packages=find_packages(exclude=('tests',)),

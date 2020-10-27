@@ -4,52 +4,54 @@ from functools import wraps
 from typing import Optional
 
 import fastapi
-from chameleon import PageTemplateLoader, PageTemplate
+from jinja2 import Environment, FileSystemLoader, Template
 
-from fastapi_chameleon.exceptions import FastAPIChameleonException
+from fastapi_jinja.exceptions import FastAPIJinjaException
 
-__templates: Optional[PageTemplateLoader] = None
+__env: Optional[Environment] = None
 template_path: Optional[str] = None
 
 
 def global_init(template_folder: str, auto_reload=False, cache_init=True):
-    global __templates, template_path
+    global __env, template_path
 
-    if __templates and cache_init:
+    if __env and cache_init:
         return
 
     if not template_folder:
-        msg = f'The template_folder must be specified.'
-        raise FastAPIChameleonException(msg)
+        msg = f"The template_folder must be specified."
+        raise FastAPIJinjaException(msg)
 
     if not os.path.isdir(template_folder):
         msg = f"The specified template folder must be a folder, it's not: {template_folder}"
-        raise FastAPIChameleonException(msg)
+        raise FastAPIJinjaException(msg)
 
     template_path = template_folder
-    __templates = PageTemplateLoader(template_folder, auto_reload=auto_reload)
+    __env = Environment(loader=FileSystemLoader(template_folder))
 
 
 def clear():
-    global __templates, template_path
-    __templates = None
+    global __env, template_path
+    __env = None
     template_path = None
 
 
 def render(template_file: str, **template_data):
-    if not __templates:
+    if not __env:
         raise Exception("You must call global_init() before rendering templates.")
 
-    page: PageTemplate = __templates[template_file]
-    return page.render(encoding='utf-8', **template_data)
+    page: Template = __env.get_template(template_file)
+    return page.render(encoding="utf-8", **template_data)
 
 
-def response(template_file: str, mimetype='text/html', status_code=200, **template_data):
+def response(
+    template_file: str, mimetype="text/html", status_code=200, **template_data
+):
     html = render(template_file, **template_data)
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def template(template_file: str, mimetype: str = 'text/html'):
+def template(template_file: str, mimetype: str = "text/html"):
     """
     Decorate a FastAPI view method to render an HTML response.
 
@@ -58,7 +60,7 @@ def template(template_file: str, mimetype: str = 'text/html'):
     :return: Decorator to be consumed by FastAPI
     """
     if not template_file:
-        raise FastAPIChameleonException("You must specify a template file.")
+        raise FastAPIJinjaException("You must specify a template file.")
 
     def response_inner(f):
         @wraps(f)

@@ -1,13 +1,13 @@
-# fastapi-chameleon
+# fastapi-jinja
 
-Adds integration of the Chameleon template language to FastAPI.
+Adds integration of the Jinja template language to FastAPI. This is inspired and based off fastapi-chamelon by Mike Kennedy. Check that out, if you are using chamelon.
 
 ## Installation
 
 For the moment, this is not yet on pypi and is fairly unstable, but if you wish to used it directly from here, just do the following:
 
 ```bash
-pip install git+https://github.com/mikeckennedy/fastapi-chameleon
+pip install git+https://github.com/ageekinside/fastapi-jinja
 ```
 
 You may want to fork this repo and then use your URL until this is more final.
@@ -22,9 +22,9 @@ This is easy to use. Just create a folder within your web app to hold the templa
 │
 ├── templates
 │   ├── home
-│   │   └── index.pt
+│   │   └── index.j2
 │   └── shared
-│       └── layout.pt
+│       └── layout.j2
 
 ```
 
@@ -32,7 +32,7 @@ In the app startup, tell the library about the folder you wish to use:
 
 ```python
 import os
-import fastapi_chameleon
+import fastapi_jinja
 
 dev_mode = True
 
@@ -40,19 +40,19 @@ folder = os.path.dirname(__file__)
 template_folder = os.path.join(folder, 'templates')
 template_folder = os.path.abspath(template_folder)
 
-fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
+fastapi_jinja.global_init(template_folder, auto_reload=dev_mode)
 ```
 
 Then just decorate the FastAPI view methods (works on sync and async methods):
 
 ```python
 @router.post('/')
-@fastapi_chameleon.template('home/index.pt')
+@fastapi_jinja.template('home/index.j2')
 async def home_post(request: Request):
     form = await request.form()
     vm = PersonViewModel(**form) 
 
-    return vm.dict() # {'first':'Michael', 'last':'Kennedy', ...}
+    return vm.dict() # {'first':'John', 'last':'Doe', ...}
 
 ```
 

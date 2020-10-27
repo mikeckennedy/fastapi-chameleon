@@ -1,0 +1,10 @@
+<html>
+  <body>
+    <title>{% block title %}{% endblock %}</title>
+    <ul>
+    {% for user in users %}
+      <li><a href="{{ user.url }}">{{ user.username }}</a></li>
+    {% endfor %}
+    </ul>
+  </body>
+</html>
