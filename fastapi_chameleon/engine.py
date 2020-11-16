@@ -84,14 +84,11 @@ def __render_response(template_file, response_val, mimetype):
     if isinstance(response_val, fastapi.Response):
         return response_val
 
-    if isinstance(response_val, dict):
-        model = dict(response_val)
-    else:
-        model = {}
-
     if template_file and not isinstance(response_val, dict):
-        msg = f"Invalid return type {type(response_val)}, we expected a dict as the return value."
+        msg = f"Invalid return type {type(response_val)}, we expected a dict or fastapi.Response as the return value."
         raise Exception(msg)
+
+    model = response_val
 
     html = render(template_file, **model)
     return fastapi.Response(content=html, media_type=mimetype)
