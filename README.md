@@ -1,6 +1,6 @@
 # fastapi-chameleon
 
-Adds integration of the Chameleon template language to FastAPI.
+Adds integration of the Chameleon template language to FastAPI. If you are interested in Jinja instead, see the sister project: [github.com/AGeekInside/fastapi-jinja](https://github.com/AGeekInside/fastapi-jinja).
 
 ## Installation
 
