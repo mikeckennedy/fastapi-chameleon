@@ -13,6 +13,16 @@ def read(filename):
         return re.sub(text_type(r':[a-z]+:`~?(.*?)`'), text_type(r'``\1``'), fd.read())
 
 
+def read_version():
+    filename = os.path.join(os.path.dirname(__file__), 'fastapi_chameleon', '__init__.py')
+    with open(filename, mode="r", encoding='utf-8') as fin:
+        for line in fin:
+            if line and line.strip() and line.startswith('__version__'):
+                return line.split('=')[1].strip().strip("'").strip('"')
+
+    return "0.0.0.0"
+
+
 requirements_txt = os.path.join(
     os.path.dirname(__file__),
     'requirements.txt'
@@ -27,7 +37,7 @@ with open(requirements_txt, 'r', encoding='utf-8') as fin:
 
 setup(
     name="fastapi-chameleon",
-    version="0.1.0",
+    version=read_version(),
     url="https://github.com/mikeckennedy/fastapi-chameleon",
     license='MIT',
 
@@ -47,5 +57,7 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
     ],
 )
