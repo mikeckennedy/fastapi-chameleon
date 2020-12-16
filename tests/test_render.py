@@ -6,6 +6,7 @@ import fastapi
 import pytest
 
 import fastapi_chameleon as fc
+from fastapi_chameleon.exceptions import FastAPIChameleonException
 
 here = os.path.dirname(__file__)
 folder = os.path.join(here, 'templates')
@@ -18,6 +19,27 @@ def test_cannot_decorate_missing_template():
             return {}
 
         view_method()
+
+
+def test_requires_template_for_default_name():
+    with pytest.raises(ValueError):
+        @fc.template(None)
+        def view_method():
+            return {}
+
+        view_method()
+
+
+def test_default_template_name():
+    @fc.template()
+    def index(a, b, c):
+        return {'a': a, 'b': b, 'c': c, 'world': 'WORLD'}
+
+    resp = index(1, 2, 3)
+    assert isinstance(resp, fastapi.Response)
+    assert resp.status_code == 200
+    html = resp.body.decode('utf-8')
+    assert '<h1>Hello default WORLD!</h1>' in html
 
 
 def test_can_decorate_dict_sync_method():

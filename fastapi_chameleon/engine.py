@@ -49,18 +49,24 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def template(template_file: str, mimetype: str = 'text/html'):
+def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
     """
     Decorate a FastAPI view method to render an HTML response.
 
-    :param str template_file: The Chameleon template file (path relative to template folder, *.pt).
+    :param str template_file: Optional, the Chameleon template file (path relative to template folder, *.pt).
     :param str mimetype: The mimetype response (defaults to text/html).
     :return: Decorator to be consumed by FastAPI
     """
-    if not template_file:
-        raise FastAPIChameleonException("You must specify a template file.")
 
     def response_inner(f):
+        nonlocal template_file
+
+        if not template_file:
+            # Use the default naming scheme: template_folder/module_name/function_name.pt
+            module = f.__module__
+            view = f.__name__
+            template_file = f'{module}/{view}.pt'
+
         @wraps(f)
         def sync_view_method(*args, **kwargs):
             response_val = f(*args, **kwargs)
@@ -80,7 +86,7 @@ def template(template_file: str, mimetype: str = 'text/html'):
 
 
 def __render_response(template_file, response_val, mimetype):
-    # sourcery skip: assign-if-exp
+    # source skip: assign-if-exp
     if isinstance(response_val, fastapi.Response):
         return response_val
 
