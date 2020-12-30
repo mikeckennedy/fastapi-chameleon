@@ -64,6 +64,8 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
         if not template_file:
             # Use the default naming scheme: template_folder/module_name/function_name.pt
             module = f.__module__
+            if '.' in module:
+                module = module.split('.')[-1]
             view = f.__name__
             template_file = f'{module}/{view}.pt'
 
