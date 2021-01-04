@@ -30,12 +30,24 @@ def test_requires_template_for_default_name():
         view_method()
 
 
-def test_default_template_name():
+def test_default_template_name_pt():
     @fc.template()
     def index(a, b, c):
         return {'a': a, 'b': b, 'c': c, 'world': 'WORLD'}
 
     resp = index(1, 2, 3)
+    assert isinstance(resp, fastapi.Response)
+    assert resp.status_code == 200
+    html = resp.body.decode('utf-8')
+    assert '<h1>Hello default WORLD!</h1>' in html
+
+
+def test_default_template_name_html():
+    @fc.template()
+    def details(a, b, c):
+        return {'a': a, 'b': b, 'c': c, 'world': 'WORLD'}
+
+    resp = details(1, 2, 3)
     assert isinstance(resp, fastapi.Response)
     assert resp.status_code == 200
     html = resp.body.decode('utf-8')

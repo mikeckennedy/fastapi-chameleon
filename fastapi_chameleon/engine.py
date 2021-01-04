@@ -67,7 +67,10 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
             if '.' in module:
                 module = module.split('.')[-1]
             view = f.__name__
-            template_file = f'{module}/{view}.pt'
+            template_file = f'{module}/{view}.html'
+
+            if not os.path.exists(os.path.join(template_path, template_file)):
+                template_file = f'{module}/{view}.pt'
 
         @wraps(f)
         def sync_view_method(*args, **kwargs):
