@@ -38,7 +38,7 @@ def clear():
 
 def render(template_file: str, **template_data):
     if not __templates:
-        raise Exception("You must call global_init() before rendering templates.")
+        raise FastAPIChameleonException("You must call global_init() before rendering templates.")
 
     page: PageTemplate = __templates[template_file]
     return page.render(encoding='utf-8', **template_data)
@@ -74,6 +74,10 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
 
         @wraps(f)
         def sync_view_method(*args, **kwargs):
+            # if not template_path:
+            #     msg = ''
+            #     raise FastAPIChameleonException(msg)
+
             response_val = f(*args, **kwargs)
             return __render_response(template_file, response_val, mimetype)
 

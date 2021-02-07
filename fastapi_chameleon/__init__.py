@@ -1,6 +1,6 @@
 """fastapi-chameleon - Adds integration of the Chameleon template language to FastAPI."""
 
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 __author__ = 'Michael Kennedy <michael@talkpython.fm>'
 __all__ = ['template', 'global_init']
 
