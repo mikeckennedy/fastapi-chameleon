@@ -1,6 +1,5 @@
 import os
 
-import fastapi
 import pytest
 
 import fastapi_chameleon as fc

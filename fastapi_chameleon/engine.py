@@ -74,10 +74,6 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
 
         @wraps(f)
         def sync_view_method(*args, **kwargs):
-            # if not template_path:
-            #     msg = ''
-            #     raise FastAPIChameleonException(msg)
-
             response_val = f(*args, **kwargs)
             return __render_response(template_file, response_val, mimetype)
 
@@ -101,7 +97,7 @@ def __render_response(template_file, response_val, mimetype):
 
     if template_file and not isinstance(response_val, dict):
         msg = f"Invalid return type {type(response_val)}, we expected a dict or fastapi.Response as the return value."
-        raise Exception(msg)
+        raise FastAPIChameleonException(msg)
 
     model = response_val
 
