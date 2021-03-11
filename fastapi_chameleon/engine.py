@@ -60,6 +60,11 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
 
     def response_inner(f):
         nonlocal template_file
+        global template_path
+
+        if not template_path:
+            template_path = 'templates'
+            # raise FastAPIChameleonException("Cannot continue: fastapi_chameleon.global_init() has not been called.")
 
         if not template_file:
             # Use the default naming scheme: template_folder/module_name/function_name.pt
