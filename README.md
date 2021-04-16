@@ -10,6 +10,12 @@ For the moment, this is not yet on pypi and is fairly unstable, but if you wish 
 pip install git+https://github.com/mikeckennedy/fastapi-chameleon
 ```
 
+or with pipenv
+
+```bash
+pipenv install -e git+https://github.com/mikeckennedy/fastapi-chameleon#egg=fastapi-chameleon
+```
+
 You may want to fork this repo and then use your URL until this is more final.
 
 ## Usage
