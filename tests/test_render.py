@@ -42,6 +42,18 @@ def test_default_template_name_pt():
     assert '<h1>Hello default WORLD!</h1>' in html
 
 
+def test_default_template_name_no_parentheses():
+    @fc.template
+    def index(a, b, c):
+        return {'a': a, 'b': b, 'c': c, 'world': 'WORLD'}
+
+    resp = index(1, 2, 3)
+    assert isinstance(resp, fastapi.Response)
+    assert resp.status_code == 200
+    html = resp.body.decode('utf-8')
+    assert '<h1>Hello default WORLD!</h1>' in html
+
+
 def test_default_template_name_html():
     @fc.template()
     def details(a, b, c):
