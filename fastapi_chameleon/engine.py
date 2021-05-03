@@ -1,7 +1,7 @@
 import inspect
 import os
 from functools import wraps
-from typing import Optional
+from typing import Optional, Union, Callable
 
 import fastapi
 from chameleon import PageTemplateLoader, PageTemplate
@@ -49,7 +49,7 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
+def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str = 'text/html'):
     """
     Decorate a FastAPI view method to render an HTML response.
 
@@ -57,6 +57,11 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
     :param str mimetype: The mimetype response (defaults to text/html).
     :return: Decorator to be consumed by FastAPI
     """
+
+    wrapped_function = None
+    if callable(template_file):
+        wrapped_function = template_file
+        template_file = None
 
     def response_inner(f):
         nonlocal template_file
@@ -92,7 +97,7 @@ def template(template_file: Optional[str] = None, mimetype: str = 'text/html'):
         else:
             return sync_view_method
 
-    return response_inner
+    return response_inner(wrapped_function) if wrapped_function else response_inner
 
 
 def __render_response(template_file, response_val, mimetype):
