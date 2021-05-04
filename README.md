@@ -16,6 +16,12 @@ or with pipenv
 pipenv install -e git+https://github.com/mikeckennedy/fastapi-chameleon#egg=fastapi-chameleon
 ```
 
+or with poetry
+
+```bash
+poetry add git+https://github.com/mikeckennedy/fastapi-chameleon#main
+```
+
 You may want to fork this repo and then use your URL until this is more final.
 
 ## Usage
