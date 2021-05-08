@@ -1,15 +1,11 @@
 import asyncio
-import os
 
 import fastapi
 # noinspection PyPackageRequirements
 import pytest
 
 import fastapi_chameleon as fc
-from fastapi_chameleon.exceptions import FastAPIChameleonException
 
-here = os.path.dirname(__file__)
-folder = os.path.join(here, 'templates')
 
 def test_cannot_decorate_missing_template(setup_global_template):
     with pytest.raises(ValueError):
