@@ -49,12 +49,13 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str = 'text/html'):
+def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str = 'text/html', status_code: int = 200):
     """
     Decorate a FastAPI view method to render an HTML response.
 
     :param str template_file: Optional, the Chameleon template file (path relative to template folder, *.pt).
     :param str mimetype: The mimetype response (defaults to text/html).
+    :param int status_code: The desired status code for the response (defaults to 200).
     :return: Decorator to be consumed by FastAPI
     """
 
@@ -85,12 +86,12 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
         @wraps(f)
         def sync_view_method(*args, **kwargs):
             response_val = f(*args, **kwargs)
-            return __render_response(template_file, response_val, mimetype)
+            return __render_response(template_file, response_val, mimetype, status_code)
 
         @wraps(f)
         async def async_view_method(*args, **kwargs):
             response_val = await f(*args, **kwargs)
-            return __render_response(template_file, response_val, mimetype)
+            return __render_response(template_file, response_val, mimetype, status_code)
 
         if inspect.iscoroutinefunction(f):
             return async_view_method
@@ -100,7 +101,7 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
     return response_inner(wrapped_function) if wrapped_function else response_inner
 
 
-def __render_response(template_file, response_val, mimetype):
+def __render_response(template_file, response_val, mimetype, status_code):
     # source skip: assign-if-exp
     if isinstance(response_val, fastapi.Response):
         return response_val
@@ -112,4 +113,4 @@ def __render_response(template_file, response_val, mimetype):
     model = response_val
 
     html = render(template_file, **model)
-    return fastapi.Response(content=html, media_type=mimetype)
+    return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
