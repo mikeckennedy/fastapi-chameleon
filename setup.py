@@ -36,7 +36,7 @@ with open(requirements_txt, 'r', encoding='utf-8') as fin:
     ]
 
 setup(
-    name="fastapi-chameleon",
+    name="fastapi_chameleon",
     version=read_version(),
     url="https://github.com/mikeckennedy/fastapi-chameleon",
     license='MIT',
@@ -46,8 +46,9 @@ setup(
 
     description="Adds integration of the Chameleon template language to FastAPI.",
     long_description=read("README.md"),
+    long_description_content_type="text/markdown",
 
-    packages=find_packages(exclude=('tests',)),
+    packages=find_packages(exclude=('tests', 'example', 'readme_resources', 'build', 'dist',)),
 
     install_requires=requires,
 
@@ -59,5 +60,6 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
 )
