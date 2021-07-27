@@ -4,25 +4,7 @@ Adds integration of the Chameleon template language to FastAPI. If you are inter
 
 ## Installation
 
-For the moment, this is not yet on PyPI and is fairly unstable, but if you wish to used it directly from here, just do the following:
-
-```bash
-pip install git+https://github.com/mikeckennedy/fastapi-chameleon
-```
-
-or with pipenv
-
-```bash
-pipenv install -e git+https://github.com/mikeckennedy/fastapi-chameleon#egg=fastapi-chameleon
-```
-
-or with poetry
-
-```bash
-poetry add git+https://github.com/mikeckennedy/fastapi-chameleon#main
-```
-
-You may want to fork this repo and then use your URL until this is more final.
+Simply `pip install fastapi_chameleon`.
 
 ## Usage
 
