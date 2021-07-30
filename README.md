@@ -61,7 +61,7 @@ for this page template.
 A common technique for user-friendly sites is to use a 
 [custom HTML page for 404 responses](http://www.instantshift.com/2019/10/16/user-friendly-404-pages/).
 This is especially important in FastAPI because FastAPI returns a 404 response + JSON by default.
-This library has support for friend 404 pages using the `fastapi_chameleon.not_found()` function.
+This library has support for friendly 404 pages using the `fastapi_chameleon.not_found()` function.
 
 Here's an example:
 
