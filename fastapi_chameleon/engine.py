@@ -6,7 +6,7 @@ from typing import Optional, Union, Callable
 import fastapi
 from chameleon import PageTemplateLoader, PageTemplate
 
-from fastapi_chameleon.exceptions import FastAPIChameleonException
+from fastapi_chameleon.exceptions import FastAPIChameleonException, FastAPIChameleonNotFoundException
 
 __templates: Optional[PageTemplateLoader] = None
 template_path: Optional[str] = None
@@ -84,13 +84,19 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
 
         @wraps(f)
         def sync_view_method(*args, **kwargs):
-            response_val = f(*args, **kwargs)
-            return __render_response(template_file, response_val, mimetype)
+            try:
+                response_val = f(*args, **kwargs)
+                return __render_response(template_file, response_val, mimetype)
+            except FastAPIChameleonNotFoundException as nfe:
+                return __render_response(nfe.template_file, {}, 'text/html', 404)
 
         @wraps(f)
         async def async_view_method(*args, **kwargs):
-            response_val = await f(*args, **kwargs)
-            return __render_response(template_file, response_val, mimetype)
+            try:
+                response_val = await f(*args, **kwargs)
+                return __render_response(template_file, response_val, mimetype)
+            except FastAPIChameleonNotFoundException as nfe:
+                return __render_response(nfe.template_file, {}, 'text/html', 404)
 
         if inspect.iscoroutinefunction(f):
             return async_view_method
@@ -100,7 +106,7 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
     return response_inner(wrapped_function) if wrapped_function else response_inner
 
 
-def __render_response(template_file, response_val, mimetype):
+def __render_response(template_file, response_val, mimetype, status_code: int = 200):
     # source skip: assign-if-exp
     if isinstance(response_val, fastapi.Response):
         return response_val
@@ -112,4 +118,13 @@ def __render_response(template_file, response_val, mimetype):
     model = response_val
 
     html = render(template_file, **model)
-    return fastapi.Response(content=html, media_type=mimetype)
+    return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
+
+
+def not_found(four04template_file: str = 'errors/404.pt'):
+    msg = 'The URL resulted in a 404 response.'
+
+    if four04template_file and four04template_file.strip():
+        raise FastAPIChameleonNotFoundException(msg, four04template_file)
+    else:
+        raise FastAPIChameleonNotFoundException(msg)
