@@ -55,3 +55,26 @@ The view method should return a `dict` to be passed as variables/values to the t
 If a `fastapi.Response` is returned, the template is skipped and the response along with status_code and
 other values is directly passed through. This is common for redirects and error responses not meant
 for this page template.
+
+## Friendly 404s and errors
+
+A common technique for user-friendly sites is to use a 
+[custom HTML page for 404 responses](http://www.instantshift.com/2019/10/16/user-friendly-404-pages/).
+This is especially important in FastAPI because FastAPI returns a 404 response + JSON by default.
+This library has support for friend 404 pages using the `fastapi_chameleon.not_found()` function.
+
+Here's an example:
+
+```python
+@router.get('/')
+@fastapi_chameleon.template('catalog/item.pt')
+async def item(item_id: int):
+    item = service.get_item_by_id(item_id)
+    if not item:
+        fastapi_chameleon.not_found()
+    
+    return item.dict()
+```
+
+This will render a 404 response with using the template file `templates/errors/404.pt`.
+You can specify another template to use for the response, but it's not required.
