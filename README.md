@@ -66,7 +66,7 @@ This library has support for friend 404 pages using the `fastapi_chameleon.not_f
 Here's an example:
 
 ```python
-@router.get('/')
+@router.get('/catalog/item/{item_id}')
 @fastapi_chameleon.template('catalog/item.pt')
 async def item(item_id: int):
     item = service.get_item_by_id(item_id)
