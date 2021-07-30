@@ -7,6 +7,8 @@ import pytest
 import fastapi_chameleon as fc
 
 
+# setup_global_template - needed as pytest mix-in.
+# noinspection PyUnusedLocal
 def test_cannot_decorate_missing_template(setup_global_template):
     with pytest.raises(ValueError):
         @fc.template('home/missing.pt')
@@ -16,6 +18,8 @@ def test_cannot_decorate_missing_template(setup_global_template):
         view_method()
 
 
+# setup_global_template - needed as pytest mix-in.
+# noinspection PyUnusedLocal
 def test_requires_template_for_default_name(setup_global_template):
     with pytest.raises(ValueError):
         @fc.template(None)
@@ -25,6 +29,8 @@ def test_requires_template_for_default_name(setup_global_template):
         view_method()
 
 
+# setup_global_template - needed as pytest mix-in.
+# noinspection PyUnusedLocal
 def test_default_template_name_pt(setup_global_template):
     @fc.template()
     def index(a, b, c):
@@ -37,6 +43,8 @@ def test_default_template_name_pt(setup_global_template):
     assert '<h1>Hello default WORLD!</h1>' in html
 
 
+# setup_global_template - needed as pytest mix-in.
+# noinspection PyUnusedLocal
 def test_default_template_name_no_parentheses(setup_global_template):
     @fc.template
     def index(a, b, c):
@@ -61,6 +69,8 @@ def test_default_template_name_html(setup_global_template):
     assert '<h1>Hello default WORLD!</h1>' in html
 
 
+# setup_global_template - needed as pytest mix-in.
+# noinspection PyUnusedLocal
 def test_can_decorate_dict_sync_method(setup_global_template):
     @fc.template('home/index.pt')
     def view_method(a, b, c):
