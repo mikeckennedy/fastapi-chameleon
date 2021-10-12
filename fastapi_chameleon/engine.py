@@ -36,7 +36,7 @@ def clear():
     template_path = None
 
 
-def render(template_file: str, **template_data):
+def render(template_file: str, **template_data: dict) -> str:
     if not __templates:
         raise FastAPIChameleonException("You must call global_init() before rendering templates.")
 
@@ -44,7 +44,7 @@ def render(template_file: str, **template_data):
     return page.render(encoding='utf-8', **template_data)
 
 
-def response(template_file: str, mimetype='text/html', status_code=200, **template_data):
+def response(template_file: str, mimetype='text/html', status_code=200, **template_data) -> fastapi.Response:
     html = render(template_file, **template_data)
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
@@ -106,7 +106,7 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
     return response_inner(wrapped_function) if wrapped_function else response_inner
 
 
-def __render_response(template_file, response_val, mimetype, status_code: int = 200):
+def __render_response(template_file, response_val, mimetype, status_code: int = 200) -> fastapi.Response:
     # source skip: assign-if-exp
     if isinstance(response_val, fastapi.Response):
         return response_val
