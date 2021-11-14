@@ -26,14 +26,13 @@ In the app startup, tell the library about the folder you wish to use:
 
 ```python
 import os
+from pathlib import Path
 import fastapi_chameleon
 
 dev_mode = True
 
-folder = os.path.dirname(__file__)
-template_folder = os.path.join(folder, 'templates')
-template_folder = os.path.abspath(template_folder)
-
+BASE_DIR = Path(__file__).resolve().parent
+template_folder = str(BASE_DIR / 'templates')
 fastapi_chameleon.global_init(template_folder, auto_reload=dev_mode)
 ```
 
