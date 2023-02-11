@@ -8,3 +8,4 @@ from .engine import global_init
 from .engine import template
 from .engine import response
 from .engine import not_found
+from .engine import generic_error
