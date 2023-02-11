@@ -2,7 +2,7 @@
 
 __version__ = '0.1.14'
 __author__ = 'Michael Kennedy <michael@talkpython.fm>'
-__all__ = ['template', 'global_init', 'not_found', 'response', ]
+__all__ = ['template', 'global_init', 'not_found', 'response', 'generic_error', ]
 
 from .engine import global_init
 from .engine import template
