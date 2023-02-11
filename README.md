@@ -77,3 +77,21 @@ async def item(item_id: int):
 
 This will render a 404 response with using the template file `templates/errors/404.pt`.
 You can specify another template to use for the response, but it's not required.
+
+If you need to return errors other than `Not Found` (status code `404`), you can use a more
+generic function: `fastapi_chameleon.generic_error(template_file: str, status_code: int)`.
+This function will allow you to return different status codes. It's generic, thus you'll have
+to pass a path to your error template file as well as a status code you want the user to get
+in response. For example:
+
+```python
+@router.get('/catalog/item/{item_id}')
+@fastapi_chameleon.template('catalog/item.pt')
+async def item(item_id: int):
+    item = service.get_item_by_id(item_id)
+    if not item:
+        fastapi_chameleon.generic_error('errors/unauthorized.pt',
+                                        fastapi.status.HTTP_401_UNAUTHORIZED)
+
+    return item.dict()
+```
