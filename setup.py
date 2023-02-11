@@ -23,17 +23,19 @@ def read_version():
     return "0.0.0.0"
 
 
-requirements_txt = os.path.join(
-    os.path.dirname(__file__),
-    'requirements.txt'
-)
+# requirements_txt = os.path.join(
+#      os.path.dirname(__file__),
+#     'requirements.txt'
+# )
 
-with open(requirements_txt, 'r', encoding='utf-8') as fin:
-    requires = [
-        line.strip()
-        for line in fin
-        if line and line.strip() and not line.strip().startswith('#')
-    ]
+# with open(requirements_txt, 'r', encoding='utf-8') as fin:
+#     requires = [
+#         line.strip()
+#         for line in fin
+#         if line and line.strip() and not line.strip().startswith('#')
+#     ]
+
+requires = ["fastapi", "Chameleon"]
 
 setup(
     name="fastapi_chameleon",
@@ -61,5 +63,6 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
 )
