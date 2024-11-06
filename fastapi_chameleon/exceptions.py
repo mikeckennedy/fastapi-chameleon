@@ -15,9 +15,10 @@ class FastAPIChameleonNotFoundException(FastAPIChameleonException):
 
 class FastAPIChameleonGenericException(FastAPIChameleonException):
     def __init__(self, template_file: str, status_code: int,
-                 message: Optional[str] = None):
+                 message: Optional[str] = None, template_data: Optional[dict] = None):
         super().__init__(message)
 
         self.template_file: str = template_file
         self.status_code: int = status_code
         self.message: Optional[str] = message
+        self.template_data: Optional[dict] = template_data
