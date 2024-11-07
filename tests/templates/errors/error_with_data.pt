@@ -1,0 +1,6 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <p tal:content="test_data"></p>
+    </body>
+</html>

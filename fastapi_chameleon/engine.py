@@ -94,7 +94,8 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
             except FastAPIChameleonNotFoundException as nfe:
                 return __render_response(nfe.template_file, {}, 'text/html', 404)
             except FastAPIChameleonGenericException as nfe:
-                return __render_response(nfe.template_file, {}, 'text/html', nfe.status_code)
+                template_data = nfe.template_data if not None else {}
+                return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
         @wraps(f)
         async def async_view_method(*args, **kwargs):
@@ -104,7 +105,8 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
             except FastAPIChameleonNotFoundException as nfe:
                 return __render_response(nfe.template_file, {}, 'text/html', 404)
             except FastAPIChameleonGenericException as nfe:
-                return __render_response(nfe.template_file, {}, 'text/html', nfe.status_code)
+                template_data = nfe.template_data if not None else {}
+                return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
         if inspect.iscoroutinefunction(f):
             return async_view_method
@@ -138,7 +140,7 @@ def not_found(four04template_file: str = 'errors/404.pt'):
         raise FastAPIChameleonNotFoundException(msg)
 
 
-def generic_error(template_file: str, status_code: int):
+def generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None):
     msg = 'The URL resulted in an error.'
 
-    raise FastAPIChameleonGenericException(template_file, status_code, msg)
+    raise FastAPIChameleonGenericException(template_file, status_code, msg, template_data=template_data)
