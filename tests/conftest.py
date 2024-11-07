@@ -1,11 +1,13 @@
-import pytest
 from pathlib import Path
+
+import pytest
+
 import fastapi_chameleon as fc
 
 
 @pytest.fixture
 def test_templates_path(pytestconfig):
-    return Path(pytestconfig.rootdir, "tests", "templates")
+    return Path(pytestconfig.rootdir, 'tests', 'templates')
 
 
 @pytest.fixture

@@ -11,6 +11,7 @@ import fastapi_chameleon as fc
 # noinspection PyUnusedLocal
 def test_cannot_decorate_missing_template(setup_global_template):
     with pytest.raises(ValueError):
+
         @fc.template('home/missing.pt')
         def view_method():
             return {}
@@ -22,6 +23,7 @@ def test_cannot_decorate_missing_template(setup_global_template):
 # noinspection PyUnusedLocal
 def test_requires_template_for_default_name(setup_global_template):
     with pytest.raises(ValueError):
+
         @fc.template(None)
         def view_method():
             return {}
@@ -99,4 +101,4 @@ def test_direct_response_pass_through():
     resp = view_method(1, 2, 3)
     assert isinstance(resp, fastapi.Response)
     assert resp.status_code == 418
-    assert resp.body == b"abc"
+    assert resp.body == b'abc'

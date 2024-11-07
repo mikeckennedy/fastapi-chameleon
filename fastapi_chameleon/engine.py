@@ -6,8 +6,11 @@ from typing import Optional, Union, Callable
 import fastapi
 from chameleon import PageTemplateLoader, PageTemplate
 
-from fastapi_chameleon.exceptions import FastAPIChameleonException, FastAPIChameleonGenericException, \
-    FastAPIChameleonNotFoundException
+from fastapi_chameleon.exceptions import (
+    FastAPIChameleonException,
+    FastAPIChameleonGenericException,
+    FastAPIChameleonNotFoundException,
+)
 
 __templates: Optional[PageTemplateLoader] = None
 template_path: Optional[str] = None
@@ -20,7 +23,7 @@ def global_init(template_folder: str, auto_reload=False, cache_init=True):
         return
 
     if not template_folder:
-        msg = f'The template_folder must be specified.'
+        msg = 'The template_folder must be specified.'
         raise FastAPIChameleonException(msg)
 
     if not os.path.isdir(template_folder):
@@ -39,7 +42,7 @@ def clear():
 
 def render(template_file: str, **template_data: dict) -> str:
     if not __templates:
-        raise FastAPIChameleonException("You must call global_init() before rendering templates.")
+        raise FastAPIChameleonException('You must call global_init() before rendering templates.')
 
     page: PageTemplate = __templates[template_file]
     return page.render(encoding='utf-8', **template_data)
@@ -117,7 +120,7 @@ def __render_response(template_file, response_val, mimetype, status_code: int = 
         return response_val
 
     if template_file and not isinstance(response_val, dict):
-        msg = f"Invalid return type {type(response_val)}, we expected a dict or fastapi.Response as the return value."
+        msg = f'Invalid return type {type(response_val)}, we expected a dict or fastapi.Response as the return value.'
         raise FastAPIChameleonException(msg)
 
     model = response_val
