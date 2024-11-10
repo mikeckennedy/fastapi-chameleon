@@ -1,0 +1,54 @@
+[project]
+name = "fastapi_chameleon"
+version = "0.1.16"
+description = "Adds integration of the Chameleon template language to FastAPI."
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Michael Kennedy", email = "michael@talkpython.fm" }
+]
+keywords = ["FastAPI", "Chameleon", "template", "integration"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
+]
+dependencies = [
+    "fastapi",
+    "chameleon"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/mikeckennedy/fastapi-chameleon"
+
+[tool.setuptools]
+packages = ["fastapi_chameleon"]
+
+[build-system]
+requires = ["hatchling>=1.21.0", "hatch-vcs>=0.3.0"]
+build-backend = "hatchling.build"
+
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/tests",
+    "/example_app",
+    "settings.json",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["fastapi_chameleon"]
+exclude = [
+    "/.github",
+    "/tests",
+    "/example_client",
+    "settings.json",
+    "ruff.toml",
+]
