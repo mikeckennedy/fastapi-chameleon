@@ -48,6 +48,7 @@ packages = ["fastapi_chameleon"]
 exclude = [
     "/.github",
     "/tests",
+    "/example",
     "/example_client",
     "settings.json",
     "ruff.toml",
