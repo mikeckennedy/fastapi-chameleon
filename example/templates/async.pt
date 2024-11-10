@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/static/site.css">
+</head>
+<body>
+<h1>Hello async world</h1>
+<p>Your async message is <strong>${message}</strong></p>
+</body>
+</html>

@@ -5,3 +5,4 @@ pytest-clarity
 twine
 hatchling
 hatch-vcs>=0.3.0
+uvicorn
