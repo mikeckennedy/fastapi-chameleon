@@ -94,7 +94,7 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
             except FastAPIChameleonNotFoundException as nfe:
                 return __render_response(nfe.template_file, {}, 'text/html', 404)
             except FastAPIChameleonGenericException as nfe:
-                template_data = nfe.template_data if not None else {}
+                template_data = nfe.template_data if nfe.template_data is not None else {}
                 return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
         @wraps(f)
@@ -105,7 +105,7 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
             except FastAPIChameleonNotFoundException as nfe:
                 return __render_response(nfe.template_file, {}, 'text/html', 404)
             except FastAPIChameleonGenericException as nfe:
-                template_data = nfe.template_data if not None else {}
+                template_data = nfe.template_data if nfe.template_data is not None else {}
                 return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
         if inspect.iscoroutinefunction(f):
