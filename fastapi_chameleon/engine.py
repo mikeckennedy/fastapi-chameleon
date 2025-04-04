@@ -1,7 +1,7 @@
 import inspect
 import os
 from functools import wraps
-from typing import Optional, Union, Callable
+from typing import Callable, TypeVar, ParamSpec, Optional, Union, overload
 
 import fastapi
 from chameleon import PageTemplateLoader, PageTemplate
@@ -14,6 +14,26 @@ from fastapi_chameleon.exceptions import (
 
 __templates: Optional[PageTemplateLoader] = None
 template_path: Optional[str] = None
+
+P = ParamSpec('P')
+R = TypeVar('R')
+
+
+# Overload for when the decorator is used with arguments.
+@overload
+def template(
+        template_file: Optional[Union[Callable[..., R], str]] = None,
+        mimetype: str = 'text/html'
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
+    ...
+
+
+# Overload for when the decorator is used without arguments.
+@overload
+def template(
+        f: Callable[P, R]
+) -> Callable[P, R]:
+    ...
 
 
 def global_init(template_folder: str, auto_reload=False, cache_init=True):
@@ -53,7 +73,7 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str = 'text/html'):
+def template(template_file: Optional[Union[Callable[..., R], str]] = None, mimetype: str = 'text/html'):
     """
     Decorate a FastAPI view method to render an HTML response.
 
@@ -61,59 +81,88 @@ def template(template_file: Optional[Union[Callable, str]] = None, mimetype: str
     :param str mimetype: The mimetype response (defaults to text/html).
     :return: Decorator to be consumed by FastAPI
     """
-
-    wrapped_function = None
     if callable(template_file):
-        wrapped_function = template_file
+        # If the first parameter is callable, the decorator is being used without arguments.
+        func = template_file
         template_file = None
+        return _decorate(func, template_file, mimetype)
+    else:
+        # If template_file is not callable, return a lambda that will wrap the function.
+        return lambda f: _decorate(f, template_file, mimetype)
 
-    def response_inner(f):
-        nonlocal template_file
-        global template_path
 
-        if not template_path:
-            template_path = 'templates'
-            # raise FastAPIChameleonException("Cannot continue: fastapi_chameleon.global_init() has not been called.")
+def _decorate(f: Callable[P, R], template_file: Optional[str], mimetype: str) -> Callable[P, R]:
+    """
+    Internal decorator function that wraps the FastAPI view function to handle rendering.
+    It supports both synchronous and asynchronous view methods.
 
-        if not template_file:
-            # Use the default naming scheme: template_folder/module_name/function_name.pt
-            module = f.__module__
-            if '.' in module:
-                module = module.split('.')[-1]
-            view = f.__name__
-            template_file = f'{module}/{view}.html'
+    :param f: The original FastAPI view function.
+    :param template_file: The optional template file path. If None, a default naming scheme is applied.
+    :param mimetype: The mimetype for the response.
+    :return: The wrapped function with additional rendering logic.
+    """
+    global template_path
 
-            if not os.path.exists(os.path.join(template_path, template_file)):
-                template_file = f'{module}/{view}.pt'
+    # Ensure the global template_path is initialized; default to 'templates' if not set.
+    if not template_path:
+        template_path = 'templates'
+        # Optionally, raise an exception if template_path must be initialized beforehand:
+        # raise FastAPIChameleonException("Cannot continue: fastapi_chameleon.global_init() has not been called.")
 
-        @wraps(f)
-        def sync_view_method(*args, **kwargs):
-            try:
-                response_val = f(*args, **kwargs)
-                return __render_response(template_file, response_val, mimetype)
-            except FastAPIChameleonNotFoundException as nfe:
-                return __render_response(nfe.template_file, {}, 'text/html', 404)
-            except FastAPIChameleonGenericException as nfe:
-                template_data = nfe.template_data if nfe.template_data is not None else {}
-                return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
+    # If no template file was provided, derive it from the function's module and name.
+    if not template_file:
+        # Use the default naming scheme: template_folder/module_name/function_name.pt
+        module = f.__module__
 
-        @wraps(f)
-        async def async_view_method(*args, **kwargs):
-            try:
-                response_val = await f(*args, **kwargs)
-                return __render_response(template_file, response_val, mimetype)
-            except FastAPIChameleonNotFoundException as nfe:
-                return __render_response(nfe.template_file, {}, 'text/html', 404)
-            except FastAPIChameleonGenericException as nfe:
-                template_data = nfe.template_data if nfe.template_data is not None else {}
-                return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
+        # Use only the last part of the module name if it's a dotted path.
+        if '.' in module:
+            module = module.split('.')[-1]
+        view = f.__name__
 
-        if inspect.iscoroutinefunction(f):
-            return async_view_method
-        else:
-            return sync_view_method
+        # Default to an HTML template
+        template_file = f'{module}/{view}.html'
 
-    return response_inner(wrapped_function) if wrapped_function else response_inner
+        # If the .html file does not exist, fallback to a .pt template.
+        if not os.path.exists(os.path.join(template_path, template_file)):
+            template_file = f'{module}/{view}.pt'
+
+    @wraps(f)
+    def sync_view_method(*args: P.args, **kwargs: P.kwargs) -> R:
+        """
+        Synchronous wrapper for the view function.
+        Calls the view, renders the response using the specified template,
+        and handles exceptions by rendering error templates.
+        """
+        try:
+            response_val = f(*args, **kwargs)
+            return __render_response(template_file, response_val, mimetype)
+        except FastAPIChameleonNotFoundException as nfe:
+            return __render_response(nfe.template_file, {}, 'text/html', 404)
+        except FastAPIChameleonGenericException as nfe:
+            template_data = nfe.template_data if nfe.template_data is not None else {}
+            return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
+
+    @wraps(f)
+    async def async_view_method(*args: P.args, **kwargs: P.kwargs) -> R:
+        """
+        Asynchronous wrapper for the view function.
+        Awaits the view, renders the response using the specified template,
+        and handles exceptions by rendering error templates.
+        """
+        try:
+            response_val = await f(*args, **kwargs)
+            return __render_response(template_file, response_val, mimetype)
+        except FastAPIChameleonNotFoundException as nfe:
+            return __render_response(nfe.template_file, {}, 'text/html', 404)
+        except FastAPIChameleonGenericException as nfe:
+            template_data = nfe.template_data if nfe.template_data is not None else {}
+            return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
+
+    # Return the appropriate wrapper based on whether the original function is a coroutine.
+    if inspect.iscoroutinefunction(f):
+        return async_view_method
+    else:
+        return sync_view_method
 
 
 def __render_response(template_file, response_val, mimetype, status_code: int = 200) -> fastapi.Response:
