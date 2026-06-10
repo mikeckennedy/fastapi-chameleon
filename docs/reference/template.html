@@ -110,7 +110,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../theme-init.js"></script>
 
 
-  <meta name="description" content="Decorate a FastAPI view method to render an HTML response.">
+  <meta name="description" content="Decorate a FastAPI view to render its return value through a Chameleon template.">
   <script type="application/ld+json">
 [
   {
@@ -118,6 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "@type": "SoftwareSourceCode",
     "name": "FastAPI Chameleon",
     "description": "Adds integration of the Chameleon template language to FastAPI.",
+    "codeRepository": "https://github.com/mikeckennedy/fastapi-chameleon",
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://mkennedy.codes/docs/fastapi-chameleon",
     "documentation": "https://mkennedy.codes/docs/fastapi-chameleon",
@@ -140,12 +141,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </script>
   <meta property="og:type" content="website">
   <meta property="og:title" content="template() – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="Decorate a FastAPI view method to render an HTML response.">
+  <meta property="og:description" content="Decorate a FastAPI view to render its return value through a Chameleon template.">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/reference/template.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="template() – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="Decorate a FastAPI view method to render an HTML response.">
+  <meta name="twitter:description" content="Decorate a FastAPI view to render its return value through a Chameleon template.">
 </head>
 
 <body class="gd-ref-sidebar nav-sidebar floating nav-fixed doc-api-page quarto-light">
@@ -327,28 +328,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div class="doc-subject">
-<p>Decorate a FastAPI view method to render an HTML response.</p>
+<p>Decorate a FastAPI view to render its return value through a Chameleon template.</p>
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py#L106-L121" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py#L124-L156" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">template</span>(<span class="va">template_file</span>: <span class="va">Optional</span>[<span class="va">Union</span>[<span class="va">Callable</span>[<span class="op">...</span>, <span class="va">R</span>], <span class="bu">str</span>]] <span class="op">=</span> <span class="cn-none">None</span>, <span class="va">mimetype</span>: <span class="bu">str</span> <span class="op">=</span> <span class="st">&quot;text/html&quot;</span>) <span class="op">-&gt;</span> <span class="va">Callable</span>[[<span class="va">Callable</span>[<span class="va">P</span>, <span class="va">R</span>]], <span class="va">Callable</span>[<span class="va">P</span>, <span class="va">R</span>]]</span>
 <span id="cb1-2" class="overload-spacer"> </span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="sig-name">template</span>(<span class="va">f</span>: <span class="va">Callable</span>[<span class="va">P</span>, <span class="va">R</span>]) <span class="op">-&gt;</span> <span class="va">Callable</span>[<span class="va">P</span>, <span class="va">R</span>]</span></code></pre></div>
 </div>
+<div class="doc-text">
+<p>Works on both sync and async view functions, and can be used three ways:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">@template</span>(<span class="st">'home/index.pt'</span>)   <span class="co"># explicit template file</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">@template</span>()                  <span class="co"># infer the template name</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">@template</span>                    <span class="co"># bare form, also infers the name</span></span></code></pre></div>
+<p>When no template file is given, the name is inferred as <code>{module}/{function}</code> under the template folder (the module’s last dotted segment and the view’s name), preferring a <code>.html</code> file and falling back to <code>.pt</code>.</p>
+<p>The decorated view should return a <code>dict</code> (used as the template’s variables). If it returns a <code>fastapi.Response</code> instead, the template is skipped and the response is passed through unchanged. Returning anything else raises <a href="exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a>.</p>
+</div>
 <section id="parameters" class="level2 doc-parameters">
 <h2 class="doc-parameters">Parameters</h2>
 <div class="doc-definition-items">
 <dl>
-<dt><code><span class="doc-parameter-name">template_file</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">None</span></code></dt>
+<dt><code><span class="doc-parameter-name">template_file</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Optional[Union[Callable[…, R], str]]</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default">None</span></code></dt>
 <dd>
-<p>Optional, the Chameleon template file (path relative to template folder, *.pt).</p>
+<p>The Chameleon template file (path relative to the template folder). Omit it (or pass <code>None</code>) to infer the name from the view. In the bare <code>@template</code> form this argument receives the view function itself.</p>
 </dd>
 <dt><code><span class="doc-parameter-name">mimetype</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">str</span> <span class="doc-parameter-default-sep op">=</span> <span class="doc-parameter-default"><span class="st">"text/html"</span></span></code></dt>
 <dd>
-The mimetype response (defaults to text/html).
+The response media type. Defaults to <code>text/html</code>.
 </dd>
 </dl>
 </div>
@@ -359,7 +368,7 @@ The mimetype response (defaults to text/html).
 <dl>
 <dt><code></code></dt>
 <dd>
-Decorator to be consumed by FastAPI
+The decorated view (bare form) or a decorator to apply to the view.
 </dd>
 </dl>
 </div>

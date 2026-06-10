@@ -5,7 +5,7 @@
       "label": "Build Docs",
       "detail": "Build the Great Docs site and mirror it into the committed docs/ folder.",
       "type": "process",
-      "command": "${workspaceFolder}/.venv/bin/python",
+      "command": "${workspaceFolder}/venv/bin/python",
       "args": ["scripts/build_docs.py"],
       "options": { "cwd": "${workspaceFolder}" },
       "group": { "kind": "build", "isDefault": true },

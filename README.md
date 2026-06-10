@@ -3,6 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/fastapi-chameleon.svg)](https://pypi.org/project/fastapi-chameleon/)
 [![Python versions](https://img.shields.io/pypi/pyversions/fastapi-chameleon.svg)](https://pypi.org/project/fastapi-chameleon/)
 [![License](https://img.shields.io/pypi/l/fastapi-chameleon.svg)](https://github.com/mikeckennedy/fastapi-chameleon/blob/main/LICENSE)
+[![Docs](https://img.shields.io/badge/docs-mkennedy.codes-blue.svg)](https://mkennedy.codes/docs/fastapi-chameleon/)
 
 Adds integration of the [Chameleon template language](https://chameleon.readthedocs.io/) to [FastAPI](https://fastapi.tiangolo.com/). If you are interested in Jinja instead, see the sister project: [github.com/AGeekInside/fastapi-jinja](https://github.com/AGeekInside/fastapi-jinja).
 
@@ -16,7 +17,7 @@ Adds integration of the [Chameleon template language](https://chameleon.readthed
 - **Friendly error pages**: `not_found()` renders a custom 404 page, `generic_error()` renders any template with any status code.
 - **Template name inference**: leave the template name off and it's derived from the module and function name.
 - **Dev mode**: `auto_reload=True` picks up template edits without restarting the server.
-- **Type-checker friendly**: the decorator is typed with `ParamSpec`-based overloads and `functools.wraps`, so the view's exact signature is preserved — FastAPI's dependency injection and tools like pyright keep working.
+- **Fully typed**: ships inline type hints with a `py.typed` marker (PEP 561). The decorator uses `ParamSpec`-based overloads and `functools.wraps`, so a decorated view keeps its exact parameter signature — FastAPI's dependency injection and type checkers like [ty](https://github.com/astral-sh/ty) and [pyrefly](https://pyrefly.org/) keep working.
 - **Tiny dependency footprint**: just `fastapi` and `chameleon`.
 
 ## Installation
@@ -236,6 +237,8 @@ It renders the template with the keyword arguments as the model and wraps the re
 
 ## API reference
 
+Full, per-function docs are at [mkennedy.codes/docs/fastapi-chameleon](https://mkennedy.codes/docs/fastapi-chameleon/). The summary below mirrors the public surface.
+
 Everything public is importable straight from `fastapi_chameleon`:
 
 ```python
@@ -244,18 +247,18 @@ __all__ = ['template', 'global_init', 'not_found', 'response', 'generic_error']
 
 | Function | Signature | Purpose |
 |---|---|---|
-| `global_init` | `global_init(template_folder: str, auto_reload=False, cache_init=True)` | Initialize the template engine once at startup. No-op if already initialized (unless `cache_init=False`). |
+| `global_init` | `global_init(template_folder: str, auto_reload: bool = False, cache_init: bool = True) -> None` | Initialize the template engine once at startup. No-op if already initialized (unless `cache_init=False`). |
 | `template` | `template(template_file=None, mimetype='text/html')` | Decorator for view functions. Usable bare, with empty parens, or with an explicit template path. |
-| `response` | `response(template_file: str, mimetype='text/html', status_code=200, **template_data) -> fastapi.Response` | Render a template and wrap it in a `Response` with full manual control. |
-| `not_found` | `not_found(four04template_file: str = 'errors/404.pt')` | Abort the view and render a friendly 404 page. |
-| `generic_error` | `generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None)` | Abort the view and render any error template with any status code. |
+| `response` | `response(template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data) -> fastapi.Response` | Render a template and wrap it in a `Response` with full manual control. |
+| `not_found` | `not_found(four04template_file: str = 'errors/404.pt') -> NoReturn` | Abort the view and render a friendly 404 page (always raises). |
+| `generic_error` | `generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None) -> NoReturn` | Abort the view and render any error template with any status code (always raises). |
 
 Two more functions live in `fastapi_chameleon.engine` (not exported at package level):
 
 | Function | Signature | Purpose |
 |---|---|---|
 | `engine.render` | `render(template_file: str, **template_data) -> str` | Render a template directly to an HTML string. |
-| `engine.clear` | `clear()` | Reset the cached loader and template path — the test-isolation hook. |
+| `engine.clear` | `clear() -> None` | Reset the cached loader and template path — the test-isolation hook. |
 
 Exceptions, in `fastapi_chameleon.exceptions`:
 
@@ -310,7 +313,7 @@ cd example
 python example_app.py
 ```
 
-Then visit `http://127.0.0.1:8000` (and `/async` for the async view). Note that the example calls `global_init()` inside its `main()` function, so run it with `python example_app.py` rather than via the `uvicorn` CLI.
+Then visit `http://127.0.0.1:8000` (and `/async` for the async view). Note that the example calls `global_init()` at runtime (from `main()`, via an `add_chameleon()` helper) rather than at import time, so run it with `python example_app.py` rather than via the `uvicorn` CLI.
 
 ## Requirements
 
@@ -327,11 +330,21 @@ PRs and issues are welcome at [github.com/mikeckennedy/fastapi-chameleon](https:
 ```bash
 git clone https://github.com/mikeckennedy/fastapi-chameleon.git
 cd fastapi-chameleon
-pip install -r requirements-dev.txt
+python -m venv venv && source venv/bin/activate
+pip install -e ".[dev]"   # pytest + ty + pyrefly
 pytest
 ```
 
-Code style is enforced with [Ruff](https://docs.astral.sh/ruff/) (`ruff.toml`: 120-character lines, single quotes). Please run `ruff check` and `pytest` before submitting.
+Code style is enforced with [Ruff](https://docs.astral.sh/ruff/) (`ruff.toml`: 120-character lines, single quotes), and the package is type-checked with [ty](https://github.com/astral-sh/ty) and [pyrefly](https://pyrefly.org/). Please run the full check before submitting:
+
+```bash
+ruff check .
+ty check fastapi_chameleon
+pyrefly check fastapi_chameleon
+pytest
+```
+
+(The `requirements-dev.txt` file additionally pulls in the docs toolchain — `great-docs`, `uvicorn`, `twine` — for building the documentation site.)
 
 ## License
 

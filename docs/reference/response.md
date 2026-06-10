@@ -39,7 +39,7 @@ Keyword arguments passed through to the template as variables.
 
 
 `fastapi.Response`  
-A `fastapi.Response` containing the rendered HTML.
+A `fastapi.Response` containing the rendered template, with the given media type and status code.
 
 
 ## Raises

@@ -21,7 +21,7 @@ Decorate FastAPI view functions to render templates, or build a response directl
 
 
 [template()](template.md#fastapi_chameleon.template)  
-Decorate a FastAPI view method to render an HTML response.
+Decorate a FastAPI view to render its return value through a Chameleon template.
 
 [response()](response.md#fastapi_chameleon.response)  
 Render a template and return it as a FastAPI response directly.

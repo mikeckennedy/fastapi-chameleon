@@ -24,9 +24,19 @@ dependencies = [
     "chameleon"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ty",
+    "pyrefly",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/mikeckennedy/fastapi-chameleon"
 "Documentation" = "https://mkennedy.codes/docs/fastapi-chameleon/"
+"Repository" = "https://github.com/mikeckennedy/fastapi-chameleon"
+"Issues" = "https://github.com/mikeckennedy/fastapi-chameleon/issues"
+"Changelog" = "https://mkennedy.codes/docs/fastapi-chameleon/changelog.html"
 
 [tool.setuptools]
 packages = ["fastapi_chameleon"]

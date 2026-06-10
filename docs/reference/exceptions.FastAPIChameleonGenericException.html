@@ -118,6 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "@type": "SoftwareSourceCode",
     "name": "FastAPI Chameleon",
     "description": "Adds integration of the Chameleon template language to FastAPI.",
+    "codeRepository": "https://github.com/mikeckennedy/fastapi-chameleon",
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://mkennedy.codes/docs/fastapi-chameleon",
     "documentation": "https://mkennedy.codes/docs/fastapi-chameleon",
@@ -294,14 +295,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h3 id="toc-title">On this page</h3>
-   
-  <ul class="collapse">
-  <li><a href="#attributes" id="toc-attributes" class="nav-link active" data-scroll-target="#attributes">Attributes</a></li>
-  </ul>
-</nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -330,7 +325,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py#L36-L57" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py#L37-L58" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.CLASS">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-class">exceptions</span><span class="op">.</span><span class="sig-name">FastAPIChameleonGenericException</span>()</span></code></pre></div>
@@ -338,23 +333,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="doc-text">
 <p>Raised by <a href="generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> and caught by the <a href="template.html#fastapi_chameleon.template" class="gdls-link gdls-code">template()</a> decorator, which renders <code>template_file</code> with the chosen <code>status_code</code>. You normally raise it indirectly via <a href="generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> rather than constructing it yourself.</p>
 </div>
-<section id="attributes" class="level2 doc-attributes">
-<h2 class="doc-attributes">Attributes</h2>
-<div class="doc-definition-items">
-<dl>
-<dt><code><span class="doc-parameter-name">message</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Optional[str]</span></code></dt>
-<dd>
-<p>The optional human-readable message describing the error.</p>
-</dd>
-<dt><code><span class="doc-parameter-name">template_data</span><span class="doc-parameter-annotation-sep">:</span> <span class="doc-parameter-annotation">Optional[dict]</span></code></dt>
-<dd>
-Optional variables passed to the template when rendering.
-</dd>
-</dl>
-</div>
 
 
-</section>
 
 </main>
 <hr style="padding: 0; margin: 0;">

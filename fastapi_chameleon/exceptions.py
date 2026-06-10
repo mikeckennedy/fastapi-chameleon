@@ -22,8 +22,9 @@ class FastAPIChameleonNotFoundException(FastAPIChameleonException):
     ``template_file`` with an HTTP 404 status. You normally raise it indirectly via
     ``not_found()`` rather than constructing it yourself.
 
-    :ivar str template_file: The template to render for the 404 response.
-    :ivar message: The optional human-readable message describing the error.
+    :ivar str template_file: The template to render for the 404 response (the constructor
+        accepts it as ``four04template_file``).
+    :ivar Optional[str] message: The optional human-readable message describing the error.
     """
 
     def __init__(self, message: Optional[str] = None, four04template_file: str = 'errors/404.pt'):
@@ -43,8 +44,8 @@ class FastAPIChameleonGenericException(FastAPIChameleonException):
 
     :ivar str template_file: The template to render for the error response.
     :ivar int status_code: The HTTP status code to return.
-    :ivar message: The optional human-readable message describing the error.
-    :ivar template_data: Optional variables passed to the template when rendering.
+    :ivar Optional[str] message: The optional human-readable message describing the error.
+    :ivar Optional[dict] template_data: Optional variables passed to the template when rendering.
     """
 
     def __init__(self, template_file: str, status_code: int,

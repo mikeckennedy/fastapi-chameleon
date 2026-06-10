@@ -1,7 +1,7 @@
 import inspect
 import os
 from functools import wraps
-from typing import Callable, TypeVar, ParamSpec, Optional, Union, overload
+from typing import Any, Awaitable, Callable, NoReturn, Optional, ParamSpec, TypeVar, Union, cast, overload
 
 import fastapi
 from chameleon import PageTemplateLoader, PageTemplate
@@ -36,7 +36,7 @@ def template(
     ...
 
 
-def global_init(template_folder: str, auto_reload=False, cache_init=True):
+def global_init(template_folder: str, auto_reload: bool = False, cache_init: bool = True) -> None:
     """
     Initialize the Chameleon template engine for your app.
 
@@ -69,13 +69,28 @@ def global_init(template_folder: str, auto_reload=False, cache_init=True):
     __templates = PageTemplateLoader(template_folder, auto_reload=auto_reload)
 
 
-def clear():
+def clear() -> None:
+    """
+    Reset the engine: clear the cached template loader and template path.
+
+    Primarily a test-isolation hook -- call it between tests (or before a fresh
+    ``global_init()``) so engine state does not leak across them.
+    """
     global __templates, template_path
     __templates = None
     template_path = None
 
 
-def render(template_file: str, **template_data: dict) -> str:
+def render(template_file: str, **template_data) -> str:
+    """
+    Render a template to a string using the configured engine.
+
+    :param str template_file: The Chameleon template file to render (path relative to
+        the template folder).
+    :param template_data: Keyword arguments passed to the template as variables.
+    :return: The rendered template as a UTF-8 string.
+    :raises FastAPIChameleonException: If ``global_init()`` has not been called.
+    """
     if not __templates:
         raise FastAPIChameleonException('You must call global_init() before rendering templates.')
 
@@ -83,7 +98,9 @@ def render(template_file: str, **template_data: dict) -> str:
     return page.render(encoding='utf-8', **template_data)
 
 
-def response(template_file: str, mimetype='text/html', status_code=200, **template_data) -> fastapi.Response:
+def response(
+        template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data
+) -> fastapi.Response:
     """
     Render a template and return it as a FastAPI response directly.
 
@@ -96,7 +113,8 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
     :param str mimetype: The response media type. Defaults to ``text/html``.
     :param int status_code: The HTTP status code for the response. Defaults to ``200``.
     :param template_data: Keyword arguments passed through to the template as variables.
-    :return: A ``fastapi.Response`` containing the rendered HTML.
+    :return: A ``fastapi.Response`` containing the rendered template, with the given
+        media type and status code.
     :raises FastAPIChameleonException: If ``global_init()`` has not been called.
     """
     html = render(template_file, **template_data)
@@ -105,11 +123,28 @@ def response(template_file: str, mimetype='text/html', status_code=200, **templa
 
 def template(template_file: Optional[Union[Callable[..., R], str]] = None, mimetype: str = 'text/html'):
     """
-    Decorate a FastAPI view method to render an HTML response.
+    Decorate a FastAPI view to render its return value through a Chameleon template.
 
-    :param str template_file: Optional, the Chameleon template file (path relative to template folder, *.pt).
-    :param str mimetype: The mimetype response (defaults to text/html).
-    :return: Decorator to be consumed by FastAPI
+    Works on both sync and async view functions, and can be used three ways::
+
+        @template('home/index.pt')   # explicit template file
+        @template()                  # infer the template name
+        @template                    # bare form, also infers the name
+
+    When no template file is given, the name is inferred as ``{module}/{function}``
+    under the template folder (the module's last dotted segment and the view's name),
+    preferring a ``.html`` file and falling back to ``.pt``.
+
+    The decorated view should return a ``dict`` (used as the template's variables). If
+    it returns a ``fastapi.Response`` instead, the template is skipped and the response
+    is passed through unchanged. Returning anything else raises
+    ``FastAPIChameleonException``.
+
+    :param template_file: The Chameleon template file (path relative to the template
+        folder). Omit it (or pass ``None``) to infer the name from the view. In the bare
+        ``@template`` form this argument receives the view function itself.
+    :param str mimetype: The response media type. Defaults to ``text/html``.
+    :return: The decorated view (bare form) or a decorator to apply to the view.
     """
     if callable(template_file):
         # If the first parameter is callable, the decorator is being used without arguments.
@@ -147,7 +182,8 @@ def _decorate(f: Callable[P, R], template_file: Optional[str], mimetype: str) ->
         # Use only the last part of the module name if it's a dotted path.
         if '.' in module:
             module = module.split('.')[-1]
-        view = f.__name__
+        # getattr (not f.__name__) so type checkers don't flag __name__ on the generic Callable[P, R].
+        view = getattr(f, '__name__')
 
         # Default to an HTML template
         template_file = f'{module}/{view}.html'
@@ -157,7 +193,7 @@ def _decorate(f: Callable[P, R], template_file: Optional[str], mimetype: str) ->
             template_file = f'{module}/{view}.pt'
 
     @wraps(f)
-    def sync_view_method(*args: P.args, **kwargs: P.kwargs) -> R:
+    def sync_view_method(*args: P.args, **kwargs: P.kwargs) -> fastapi.Response:
         """
         Synchronous wrapper for the view function.
         Calls the view, renders the response using the specified template,
@@ -173,14 +209,14 @@ def _decorate(f: Callable[P, R], template_file: Optional[str], mimetype: str) ->
             return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
     @wraps(f)
-    async def async_view_method(*args: P.args, **kwargs: P.kwargs) -> R:
+    async def async_view_method(*args: P.args, **kwargs: P.kwargs) -> fastapi.Response:
         """
         Asynchronous wrapper for the view function.
         Awaits the view, renders the response using the specified template,
         and handles exceptions by rendering error templates.
         """
         try:
-            response_val = await f(*args, **kwargs)
+            response_val = await cast(Awaitable[Any], f(*args, **kwargs))
             return __render_response(template_file, response_val, mimetype)
         except FastAPIChameleonNotFoundException as nfe:
             return __render_response(nfe.template_file, {}, 'text/html', 404)
@@ -189,10 +225,12 @@ def _decorate(f: Callable[P, R], template_file: Optional[str], mimetype: str) ->
             return __render_response(nfe.template_file, template_data, 'text/html', nfe.status_code)
 
     # Return the appropriate wrapper based on whether the original function is a coroutine.
+    # The wrappers return a fastapi.Response at runtime; we cast back to the view's declared
+    # Callable[P, R] so the decorator stays signature-transparent for callers (FastAPI, type checkers).
     if inspect.iscoroutinefunction(f):
-        return async_view_method
+        return cast(Callable[P, R], async_view_method)
     else:
-        return sync_view_method
+        return cast(Callable[P, R], sync_view_method)
 
 
 def __render_response(template_file, response_val, mimetype, status_code: int = 200) -> fastapi.Response:
@@ -210,7 +248,7 @@ def __render_response(template_file, response_val, mimetype, status_code: int = 
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
 
-def not_found(four04template_file: str = 'errors/404.pt'):
+def not_found(four04template_file: str = 'errors/404.pt') -> NoReturn:
     """
     Short-circuit the current view and render a friendly 404 page.
 
@@ -232,7 +270,7 @@ def not_found(four04template_file: str = 'errors/404.pt'):
         raise FastAPIChameleonNotFoundException(msg)
 
 
-def generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None):
+def generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None) -> NoReturn:
     """
     Short-circuit the current view and render an error page with a custom status code.
 

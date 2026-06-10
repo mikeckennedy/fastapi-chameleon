@@ -28,7 +28,7 @@ Point the library at your Chameleon templates folder once at app startup.
 
 Decorate FastAPI view functions to render templates, or build a response directly.
 
-- `template`: Decorate a FastAPI view method to render an HTML response
+- `template`: Decorate a FastAPI view to render its return value through a Chameleon template
 - `response`: Render a template and return it as a FastAPI response directly
 
 ### Error responses
@@ -51,3 +51,4 @@ Exception types raised by the library (the error helpers raise these internally)
 - [Full documentation](https://mkennedy.codes/docs/fastapi-chameleon/)
 - [llms.txt](llms.txt) — Indexed API reference for LLMs
 - [llms-full.txt](llms-full.txt) — Comprehensive documentation for LLMs
+- [Source code](https://github.com/mikeckennedy/fastapi-chameleon)

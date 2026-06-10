@@ -118,6 +118,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "@type": "SoftwareSourceCode",
     "name": "FastAPI Chameleon",
     "description": "Adds integration of the Chameleon template language to FastAPI.",
+    "codeRepository": "https://github.com/mikeckennedy/fastapi-chameleon",
     "license": "https://opensource.org/licenses/MIT",
     "url": "https://mkennedy.codes/docs/fastapi-chameleon",
     "documentation": "https://mkennedy.codes/docs/fastapi-chameleon",
@@ -332,7 +333,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <div class="doc-usage-source">
 <p>Usage</p>
-<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py#L86-L103" target="_blank" rel="noopener">Source</a></p>
+<p><a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py#L101-L121" target="_blank" rel="noopener">Source</a></p>
 </div>
 <div class="doc-signature doc-Kind.FUNCTION">
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="sig-name">response</span>(
@@ -374,7 +375,7 @@ Keyword arguments passed through to the template as variables.
 <dl>
 <dt><code> <span class="doc-parameter-annotation">fastapi.Response</span></code></dt>
 <dd>
-A <code>fastapi.Response</code> containing the rendered HTML.
+A <code>fastapi.Response</code> containing the rendered template, with the given media type and status code.
 </dd>
 </dl>
 </div>

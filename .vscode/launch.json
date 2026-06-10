@@ -6,7 +6,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/build_docs.py",
-      "python": "${workspaceFolder}/.venv/bin/python",
+      "python": "${workspaceFolder}/venv/bin/python",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false
@@ -15,9 +15,9 @@
       "name": "Preview Docs",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/.venv/bin/great-docs",
+      "program": "${workspaceFolder}/venv/bin/great-docs",
       "args": ["preview"],
-      "python": "${workspaceFolder}/.venv/bin/python",
+      "python": "${workspaceFolder}/venv/bin/python",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false
@@ -27,7 +27,7 @@
       "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/scripts/serve_docs.py",
-      "python": "${workspaceFolder}/.venv/bin/python",
+      "python": "${workspaceFolder}/venv/bin/python",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "justMyCode": false

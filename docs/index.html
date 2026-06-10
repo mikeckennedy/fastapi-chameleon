@@ -117,6 +117,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   "@type": "SoftwareSourceCode",
   "name": "FastAPI Chameleon",
   "description": "Adds integration of the Chameleon template language to FastAPI.",
+  "codeRepository": "https://github.com/mikeckennedy/fastapi-chameleon",
   "license": "https://opensource.org/licenses/MIT",
   "url": "https://mkennedy.codes/docs/fastapi-chameleon",
   "documentation": "https://mkennedy.codes/docs/fastapi-chameleon",
@@ -199,7 +200,7 @@ section.level2:first-of-type > h2:first-child,
 <div class="no-row-height column-margin column-container"><div class="">
 <section id="links" class="level3">
 <h3 class="anchored" data-anchor-id="links">Links</h3>
-<p><a href="https://pypi.org/project/fastapi_chameleon/">View on PyPI</a><br></p>
+<p><a href="https://pypi.org/project/fastapi_chameleon/">View on PyPI</a><br> <a href="https://github.com/mikeckennedy/fastapi-chameleon">Browse source code</a><br> <a href="https://github.com/mikeckennedy/fastapi-chameleon/issues">Issues</a><br> <a href="https://mkennedy.codes/docs/fastapi-chameleon/changelog.html">Changelog</a><br></p>
 </section>
 <section id="ai-agents" class="level3">
 <h3 class="anchored" data-anchor-id="ai-agents">AI / Agents</h3>
@@ -225,11 +226,11 @@ section.level2:first-of-type > h2:first-child,
 </section>
 <section id="meta" class="level3">
 <h3 class="anchored" data-anchor-id="meta">Meta</h3>
-<p><strong>Requires:</strong> Python <code>&gt;=3.10</code></p>
+<p><strong>Requires:</strong> Python <code>&gt;=3.10</code><br> <strong>Provides-Extra:</strong> <code>dev</code></p>
 </section>
 </div></div><section id="fastapi-chameleon" class="level1">
 <h1>fastapi-chameleon</h1>
-<p><a href="https://pypi.org/project/fastapi-chameleon/"><img src="https://img.shields.io/pypi/v/fastapi-chameleon.svg" class="img-fluid" alt="PyPI version"></a> <a href="https://pypi.org/project/fastapi-chameleon/"><img src="https://img.shields.io/pypi/pyversions/fastapi-chameleon.svg" class="img-fluid" alt="Python versions"></a> <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/fastapi-chameleon.svg" class="img-fluid" alt="License"></a></p>
+<p><a href="https://pypi.org/project/fastapi-chameleon/"><img src="https://img.shields.io/pypi/v/fastapi-chameleon.svg" class="img-fluid" alt="PyPI version"></a> <a href="https://pypi.org/project/fastapi-chameleon/"><img src="https://img.shields.io/pypi/pyversions/fastapi-chameleon.svg" class="img-fluid" alt="Python versions"></a> <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/LICENSE"><img src="https://img.shields.io/pypi/l/fastapi-chameleon.svg" class="img-fluid" alt="License"></a> <a href="https://mkennedy.codes/docs/fastapi-chameleon/"><img src="https://img.shields.io/badge/docs-mkennedy.codes-blue.svg" class="img-fluid" alt="Docs"></a></p>
 <p>Adds integration of the <a href="https://chameleon.readthedocs.io/">Chameleon template language</a> to <a href="https://fastapi.tiangolo.com/">FastAPI</a>. If you are interested in Jinja instead, see the sister project: <a href="https://github.com/AGeekInside/fastapi-jinja">github.com/AGeekInside/fastapi-jinja</a>.</p>
 <p><strong>Documentation:</strong> full docs and a per-function API reference live at <a href="https://mkennedy.codes/docs/fastapi-chameleon/">mkennedy.codes/docs/fastapi-chameleon</a>. An <a href="https://mkennedy.codes/docs/fastapi-chameleon/llms.txt">llms.txt</a> index is available for AI coding tools.</p>
 <section id="features" class="level2">
@@ -241,7 +242,7 @@ section.level2:first-of-type > h2:first-child,
 <li><strong>Friendly error pages</strong>: <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> renders a custom 404 page, <a href="reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> renders any template with any status code.</li>
 <li><strong>Template name inference</strong>: leave the template name off and it’s derived from the module and function name.</li>
 <li><strong>Dev mode</strong>: <code>auto_reload=True</code> picks up template edits without restarting the server.</li>
-<li><strong>Type-checker friendly</strong>: the decorator is typed with <code>ParamSpec</code>-based overloads and <code>functools.wraps</code>, so the view’s exact signature is preserved — FastAPI’s dependency injection and tools like pyright keep working.</li>
+<li><strong>Fully typed</strong>: ships inline type hints with a <code>py.typed</code> marker (PEP 561). The decorator uses <code>ParamSpec</code>-based overloads and <code>functools.wraps</code>, so a decorated view keeps its exact parameter signature — FastAPI’s dependency injection and type checkers like <a href="https://github.com/astral-sh/ty">ty</a> and <a href="https://pyrefly.org/">pyrefly</a> keep working.</li>
 <li><strong>Tiny dependency footprint</strong>: just <code>fastapi</code> and <code>chameleon</code>.</li>
 </ul>
 </section>
@@ -407,6 +408,7 @@ section.level2:first-of-type > h2:first-child,
 </section>
 <section id="api-reference" class="level2">
 <h2 class="anchored" data-anchor-id="api-reference">API reference</h2>
+<p>Full, per-function docs are at <a href="https://mkennedy.codes/docs/fastapi-chameleon/">mkennedy.codes/docs/fastapi-chameleon</a>. The summary below mirrors the public surface.</p>
 <p>Everything public is importable straight from <code>fastapi_chameleon</code>:</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="va">__all__</span> <span class="op">=</span> [<span class="st">'template'</span>, <span class="st">'global_init'</span>, <span class="st">'not_found'</span>, <span class="st">'response'</span>, <span class="st">'generic_error'</span>]</span></code></pre></div>
 <table class="caption-top table">
@@ -420,7 +422,7 @@ section.level2:first-of-type > h2:first-child,
 <tbody>
 <tr class="odd">
 <td><a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init</a></td>
-<td><code>global_init(template_folder: str, auto_reload=False, cache_init=True)</code></td>
+<td><code>global_init(template_folder: str, auto_reload: bool = False, cache_init: bool = True) -&gt; None</code></td>
 <td>Initialize the template engine once at startup. No-op if already initialized (unless <code>cache_init=False</code>).</td>
 </tr>
 <tr class="even">
@@ -430,18 +432,18 @@ section.level2:first-of-type > h2:first-child,
 </tr>
 <tr class="odd">
 <td><a href="reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response</a></td>
-<td><code>response(template_file: str, mimetype='text/html', status_code=200, **template_data) -&gt; fastapi.Response</code></td>
+<td><code>response(template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data) -&gt; fastapi.Response</code></td>
 <td>Render a template and wrap it in a <code>Response</code> with full manual control.</td>
 </tr>
 <tr class="even">
 <td><a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found</a></td>
-<td><code>not_found(four04template_file: str = 'errors/404.pt')</code></td>
-<td>Abort the view and render a friendly 404 page.</td>
+<td><code>not_found(four04template_file: str = 'errors/404.pt') -&gt; NoReturn</code></td>
+<td>Abort the view and render a friendly 404 page (always raises).</td>
 </tr>
 <tr class="odd">
 <td><a href="reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error</a></td>
-<td><code>generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None)</code></td>
-<td>Abort the view and render any error template with any status code.</td>
+<td><code>generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None) -&gt; NoReturn</code></td>
+<td>Abort the view and render any error template with any status code (always raises).</td>
 </tr>
 </tbody>
 </table>
@@ -462,7 +464,7 @@ section.level2:first-of-type > h2:first-child,
 </tr>
 <tr class="even">
 <td><code>engine.clear</code></td>
-<td><code>clear()</code></td>
+<td><code>clear() -&gt; None</code></td>
 <td>Reset the cached loader and template path — the test-isolation hook.</td>
 </tr>
 </tbody>
@@ -512,7 +514,7 @@ section.level2:first-of-type > h2:first-child,
 <p>A small, runnable FastAPI app showing sync and async views lives in the <a href="https://github.com/mikeckennedy/fastapi-chameleon/tree/main/example"><code>example/</code></a> folder:</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> example</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> example_app.py</span></code></pre></div>
-<p>Then visit <code>http://127.0.0.1:8000</code> (and <code>/async</code> for the async view). Note that the example calls <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> inside its <code>main()</code> function, so run it with <code>python example_app.py</code> rather than via the <code>uvicorn</code> CLI.</p>
+<p>Then visit <code>http://127.0.0.1:8000</code> (and <code>/async</code> for the async view). Note that the example calls <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> at runtime (from <code>main()</code>, via an <code>add_chameleon()</code> helper) rather than at import time, so run it with <code>python example_app.py</code> rather than via the <code>uvicorn</code> CLI.</p>
 </section>
 <section id="requirements" class="level2">
 <h2 class="anchored" data-anchor-id="requirements">Requirements</h2>
@@ -528,9 +530,15 @@ section.level2:first-of-type > h2:first-child,
 <p>PRs and issues are welcome at <a href="https://github.com/mikeckennedy/fastapi-chameleon">github.com/mikeckennedy/fastapi-chameleon</a>.</p>
 <div class="sourceCode" id="cb18"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/mikeckennedy/fastapi-chameleon.git</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> fastapi-chameleon</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-r</span> requirements-dev.txt</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pytest</span></span></code></pre></div>
-<p>Code style is enforced with <a href="https://docs.astral.sh/ruff/">Ruff</a> (<code>ruff.toml</code>: 120-character lines, single quotes). Please run <code>ruff check</code> and <code>pytest</code> before submitting.</p>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> venv venv <span class="kw">&amp;&amp;</span> <span class="bu">source</span> venv/bin/activate</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install <span class="at">-e</span> <span class="st">".[dev]"</span>   <span class="co"># pytest + ty + pyrefly</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pytest</span></span></code></pre></div>
+<p>Code style is enforced with <a href="https://docs.astral.sh/ruff/">Ruff</a> (<code>ruff.toml</code>: 120-character lines, single quotes), and the package is type-checked with <a href="https://github.com/astral-sh/ty">ty</a> and <a href="https://pyrefly.org/">pyrefly</a>. Please run the full check before submitting:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ruff</span> check .</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ty</span> check fastapi_chameleon</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pyrefly</span> check fastapi_chameleon</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pytest</span></span></code></pre></div>
+<p>(The <code>requirements-dev.txt</code> file additionally pulls in the docs toolchain — <code>great-docs</code>, <code>uvicorn</code>, <code>twine</code> — for building the documentation site.)</p>
 </section>
 <section id="license" class="level2">
 <h2 class="anchored" data-anchor-id="license">License</h2>
