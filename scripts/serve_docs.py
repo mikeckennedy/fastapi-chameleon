@@ -13,22 +13,22 @@ import http.server
 import socketserver
 from pathlib import Path
 
-PREFIX = "/docs/fastapi-chameleon"
+PREFIX = '/docs/fastapi-chameleon'
 PORT = 8099
-ROOT = Path(__file__).resolve().parent.parent / "docs"  # repo-root/docs (package is at git root)
+ROOT = Path(__file__).resolve().parent.parent / 'docs'  # repo-root/docs (package is at git root)
 
 
 class H(http.server.SimpleHTTPRequestHandler):
     def translate_path(self, path):
-        c = path.split("?", 1)[0].split("#", 1)[0]
+        c = path.split('?', 1)[0].split('#', 1)[0]
         if c.startswith(PREFIX):
-            path = c[len(PREFIX):] or "/"
+            path = c[len(PREFIX) :] or '/'
         return super().translate_path(path)
 
     def send_head(self):
-        if self.path in ("/", PREFIX):
+        if self.path in ('/', PREFIX):
             self.send_response(302)
-            self.send_header("Location", PREFIX + "/")
+            self.send_header('Location', PREFIX + '/')
             self.end_headers()
             return None
         return super().send_head()
@@ -40,11 +40,11 @@ class S(socketserver.TCPServer):
 
 def main():
     if not ROOT.is_dir():
-        raise SystemExit(f"Run build_docs.py first; {ROOT} missing")
-    with S(("127.0.0.1", PORT), functools.partial(H, directory=str(ROOT))) as httpd:
-        print(f"-> http://127.0.0.1:{PORT}{PREFIX}/  (Ctrl+C to stop)")
+        raise SystemExit(f'Run build_docs.py first; {ROOT} missing')
+    with S(('127.0.0.1', PORT), functools.partial(H, directory=str(ROOT))) as httpd:
+        print(f'-> http://127.0.0.1:{PORT}{PREFIX}/  (Ctrl+C to stop)')
         httpd.serve_forever()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

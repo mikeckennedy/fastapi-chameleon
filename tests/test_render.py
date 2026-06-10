@@ -1,6 +1,7 @@
 import asyncio
 
 import fastapi
+
 # noinspection PyPackageRequirements
 import pytest
 

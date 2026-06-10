@@ -22,18 +22,13 @@ R = TypeVar('R')
 # Overload for when the decorator is used with arguments.
 @overload
 def template(
-        template_file: Optional[Union[Callable[..., R], str]] = None,
-        mimetype: str = 'text/html'
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
-    ...
+    template_file: Optional[Union[Callable[..., R], str]] = None, mimetype: str = 'text/html'
+) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
 
 
 # Overload for when the decorator is used without arguments.
 @overload
-def template(
-        f: Callable[P, R]
-) -> Callable[P, R]:
-    ...
+def template(f: Callable[P, R]) -> Callable[P, R]: ...
 
 
 def global_init(template_folder: str, auto_reload: bool = False, cache_init: bool = True) -> None:
@@ -99,7 +94,7 @@ def render(template_file: str, **template_data) -> str:
 
 
 def response(
-        template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data
+    template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data
 ) -> fastapi.Response:
     """
     Render a template and return it as a FastAPI response directly.

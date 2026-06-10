@@ -9,7 +9,7 @@ import fastapi_chameleon
 app = fastapi.FastAPI()
 
 
-@app.get("/")
+@app.get('/')
 @fastapi_chameleon.template('index.pt')
 def hello_world():
     return {'message': "Let's go Chameleon and FastAPI!"}
@@ -18,7 +18,7 @@ def hello_world():
 @app.get('/async')
 @fastapi_chameleon.template('async.pt')
 async def async_world():
-    await asyncio.sleep(.01)
+    await asyncio.sleep(0.01)
     return {'message': "Let's go async Chameleon and FastAPI!"}
 
 

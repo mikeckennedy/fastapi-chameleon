@@ -48,8 +48,9 @@ class FastAPIChameleonGenericException(FastAPIChameleonException):
     :ivar Optional[dict] template_data: Optional variables passed to the template when rendering.
     """
 
-    def __init__(self, template_file: str, status_code: int,
-                 message: Optional[str] = None, template_data: Optional[dict] = None):
+    def __init__(
+        self, template_file: str, status_code: int, message: Optional[str] = None, template_data: Optional[dict] = None
+    ):
         super().__init__(message)
 
         self.template_file: str = template_file
