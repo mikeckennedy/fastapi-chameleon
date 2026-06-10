@@ -1,75 +1,75 @@
 {
-  "build_time": "2026-06-10T02:38:58Z",
-  "total_seconds": 6.521,
+  "build_time": "2026-06-10T02:45:13Z",
+  "total_seconds": 6.18,
   "pages": [
     {
       "page": "reference/generic_error.qmd",
-      "seconds": 2.219,
+      "seconds": 1.977,
       "frozen": false
     },
     {
       "page": "index.qmd",
-      "seconds": 1.664,
-      "frozen": false
-    },
-    {
-      "page": "reference/template.qmd",
-      "seconds": 0.284,
-      "frozen": false
-    },
-    {
-      "page": "reference/global_init.qmd",
-      "seconds": 0.243,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonNotFoundException.qmd",
-      "seconds": 0.225,
+      "seconds": 1.713,
       "frozen": false
     },
     {
       "page": "reference/not_found.qmd",
-      "seconds": 0.224,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonException.qmd",
-      "seconds": 0.22,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
-      "seconds": 0.22,
+      "seconds": 0.23,
       "frozen": false
     },
     {
       "page": "reference/response.qmd",
-      "seconds": 0.215,
+      "seconds": 0.218,
+      "frozen": false
+    },
+    {
+      "page": "reference/template.qmd",
+      "seconds": 0.214,
+      "frozen": false
+    },
+    {
+      "page": "reference/global_init.qmd",
+      "seconds": 0.213,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonNotFoundException.qmd",
+      "seconds": 0.213,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
+      "seconds": 0.211,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonException.qmd",
+      "seconds": 0.208,
       "frozen": false
     },
     {
       "page": "reference/index.qmd",
-      "seconds": 0.215,
+      "seconds": 0.206,
       "frozen": false
     },
     {
       "page": "skill.md",
-      "seconds": 0.203,
-      "frozen": false
-    },
-    {
-      "page": "license.qmd",
-      "seconds": 0.2,
+      "seconds": 0.201,
       "frozen": false
     },
     {
       "page": "skills.qmd",
-      "seconds": 0.197,
+      "seconds": 0.195,
       "frozen": false
     },
     {
       "page": "changelog.qmd",
-      "seconds": 0.192,
+      "seconds": 0.191,
+      "frozen": false
+    },
+    {
+      "page": "license.qmd",
+      "seconds": 0.19,
       "frozen": false
     }
   ]
