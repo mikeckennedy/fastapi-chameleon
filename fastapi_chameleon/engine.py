@@ -37,6 +37,21 @@ def template(
 
 
 def global_init(template_folder: str, auto_reload=False, cache_init=True):
+    """
+    Initialize the Chameleon template engine for your app.
+
+    Call this once at startup, pointing it at the folder that holds your ``*.pt``
+    templates. Template paths used elsewhere (in ``template()``, ``response()``,
+    ``not_found()``, and ``generic_error()``) are resolved relative to this folder.
+
+    :param str template_folder: Path to the folder containing your Chameleon templates.
+    :param bool auto_reload: Reload templates from disk when they change. Handy in
+        development; leave ``False`` in production. Defaults to ``False``.
+    :param bool cache_init: When ``True`` (the default), a second call is a no-op once
+        the engine is already initialized. Pass ``False`` to force re-initialization
+        (for example, to switch template folders in tests).
+    :raises FastAPIChameleonException: If ``template_folder`` is empty or is not a directory.
+    """
     global __templates, template_path
 
     if __templates and cache_init:
@@ -69,6 +84,21 @@ def render(template_file: str, **template_data: dict) -> str:
 
 
 def response(template_file: str, mimetype='text/html', status_code=200, **template_data) -> fastapi.Response:
+    """
+    Render a template and return it as a FastAPI response directly.
+
+    Use this when you want a rendered ``Response`` without the ``template()``
+    decorator, for example to return a fully-formed response from a view that does
+    its own branching. Requires ``global_init()`` to have been called first.
+
+    :param str template_file: The Chameleon template file to render (path relative to
+        the template folder, ``*.pt``).
+    :param str mimetype: The response media type. Defaults to ``text/html``.
+    :param int status_code: The HTTP status code for the response. Defaults to ``200``.
+    :param template_data: Keyword arguments passed through to the template as variables.
+    :return: A ``fastapi.Response`` containing the rendered HTML.
+    :raises FastAPIChameleonException: If ``global_init()`` has not been called.
+    """
     html = render(template_file, **template_data)
     return fastapi.Response(content=html, media_type=mimetype, status_code=status_code)
 
@@ -181,6 +211,19 @@ def __render_response(template_file, response_val, mimetype, status_code: int = 
 
 
 def not_found(four04template_file: str = 'errors/404.pt'):
+    """
+    Short-circuit the current view and render a friendly 404 page.
+
+    Call this from inside a ``template()``-decorated view when a resource cannot be
+    found. It raises an exception that the decorator catches and turns into an HTTP
+    404 response rendered from ``four04template_file``. This function never returns
+    normally.
+
+    :param str four04template_file: The template to render for the 404 response (path
+        relative to the template folder). Defaults to ``errors/404.pt``.
+    :raises FastAPIChameleonNotFoundException: Always; this is how the 404 is signalled
+        to the decorator.
+    """
     msg = 'The URL resulted in a 404 response.'
 
     if four04template_file and four04template_file.strip():
@@ -190,6 +233,23 @@ def not_found(four04template_file: str = 'errors/404.pt'):
 
 
 def generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None):
+    """
+    Short-circuit the current view and render an error page with a custom status code.
+
+    Like ``not_found()``, but for any error: call it from inside a
+    ``template()``-decorated view to render ``template_file`` with the HTTP
+    ``status_code`` you choose (for example ``401`` or ``500``). The decorator catches
+    the raised exception and builds the response. This function never returns normally.
+
+    :param str template_file: The error template to render (path relative to the
+        template folder).
+    :param int status_code: The HTTP status code to return (for example
+        ``fastapi.status.HTTP_401_UNAUTHORIZED``).
+    :param dict template_data: Optional variables passed to the template. Defaults to
+        ``None`` (an empty context).
+    :raises FastAPIChameleonGenericException: Always; this is how the error is signalled
+        to the decorator.
+    """
     msg = 'The URL resulted in an error.'
 
     raise FastAPIChameleonGenericException(template_file, status_code, msg, template_data=template_data)

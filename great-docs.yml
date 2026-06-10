@@ -1,0 +1,78 @@
+# Great Docs configuration for fastapi-chameleon.
+# See https://posit-dev.github.io/great-docs/user-guide/configuration.html
+
+# Import name == distribution name (fastapi_chameleon), so `module:` is not needed.
+display_name: FastAPI Chameleon
+
+# Pin the docstring style; this package uses Sphinx-style (:param:/:return:).
+parser: sphinx
+
+# Use runtime introspection for accurate signatures (the package imports cleanly).
+dynamic: true
+
+# Subpath hosting: drives Quarto's base path so CSS/JS/nav resolve under the
+# subdirectory. Keep the trailing slash.
+site_url: "https://mkennedy.codes/docs/fastapi-chameleon/"
+
+# GOTCHA G7: the sitemap/robots/canonical/og:url base URL is detected separately
+# (defaults to the GitHub Pages URL) and does NOT fall back to site_url. Pin it here
+# so the sitemap points at mkennedy.codes instead of github.io.
+seo:
+  canonical:
+    base_url: "https://mkennedy.codes/docs/fastapi-chameleon/"
+
+# Source repository + "view source" links. PKG_DIR == GIT_ROOT here, so the generated
+# GitHub links are already correct (the G6 source-link fix is NOT needed).
+repo: https://github.com/mikeckennedy/fastapi-chameleon
+github_style: widget
+source:
+  enabled: true
+  branch: main
+  placement: usage
+
+# Link to the PyPI project page.
+pypi: true
+
+# GOTCHA G5: mcp.enabled defaults to true, which renders an empty "MCP" tab even with no
+# MCP server. This project ships no MCP server, so disable it.
+mcp:
+  enabled: false
+
+# Author metadata for the landing-page sidebar.
+authors:
+  - name: Michael Kennedy
+    role: Author
+    email: michael@talkpython.fm
+    github: mikeckennedy
+
+# Jupyter kernel for executing any code cells in generated pages.
+jupyter: python3
+
+# API reference structure. Sections group the public API by task; each function/class is
+# referenced by name (the 5 __all__ exports) or full path (the exception classes, which
+# are public but not re-exported at the top level).
+reference:
+  title: "API Reference"
+  desc: "Everything fastapi-chameleon exposes: the template decorator, app setup, error helpers, and the exception types."
+  sections:
+    - title: Setup
+      desc: "Point the library at your Chameleon templates folder once at app startup."
+      contents:
+        - global_init
+    - title: Rendering views
+      desc: "Decorate FastAPI view functions to render templates, or build a response directly."
+      contents:
+        - template
+        - response
+    - title: Error responses
+      desc: "Short-circuit a view to render a friendly error page with the right status code."
+      contents:
+        - not_found
+        - generic_error
+    - title: Exceptions
+      desc: "Exception types raised by the library (the error helpers raise these internally)."
+      contents:
+        # Paths are relative to the package root (resolved as fastapi_chameleon:<entry>).
+        - exceptions.FastAPIChameleonException
+        - exceptions.FastAPIChameleonNotFoundException
+        - exceptions.FastAPIChameleonGenericException

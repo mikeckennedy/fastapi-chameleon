@@ -1,0 +1,132 @@
+----------------------------------------------------------------------
+This is the API documentation for the fastapi_chameleon library.
+----------------------------------------------------------------------
+
+
+## Setup
+
+Point the library at your Chameleon templates folder once at app startup.
+
+
+global_init(template_folder: str, auto_reload=False, cache_init=True)
+
+Initialize the Chameleon template engine for your app.
+
+Call this once at startup, pointing it at the folder that holds your ``*.pt``
+templates. Template paths used elsewhere (in ``template()``, ``response()``,
+``not_found()``, and ``generic_error()``) are resolved relative to this folder.
+
+:param str template_folder: Path to the folder containing your Chameleon templates.
+:param bool auto_reload: Reload templates from disk when they change. Handy in
+    development; leave ``False`` in production. Defaults to ``False``.
+:param bool cache_init: When ``True`` (the default), a second call is a no-op once
+    the engine is already initialized. Pass ``False`` to force re-initialization
+    (for example, to switch template folders in tests).
+:raises FastAPIChameleonException: If ``template_folder`` is empty or is not a directory.
+
+
+## Rendering views
+
+Decorate FastAPI view functions to render templates, or build a response directly.
+
+
+template(template_file: Union[Callable[..., ~R], str, NoneType] = None, mimetype: str = 'text/html')
+
+Decorate a FastAPI view method to render an HTML response.
+
+:param str template_file: Optional, the Chameleon template file (path relative to template folder, *.pt).
+:param str mimetype: The mimetype response (defaults to text/html).
+:return: Decorator to be consumed by FastAPI
+
+response(template_file: str, mimetype='text/html', status_code=200, **template_data) -> starlette.responses.Response
+
+Render a template and return it as a FastAPI response directly.
+
+Use this when you want a rendered ``Response`` without the ``template()``
+decorator, for example to return a fully-formed response from a view that does
+its own branching. Requires ``global_init()`` to have been called first.
+
+:param str template_file: The Chameleon template file to render (path relative to
+    the template folder, ``*.pt``).
+:param str mimetype: The response media type. Defaults to ``text/html``.
+:param int status_code: The HTTP status code for the response. Defaults to ``200``.
+:param template_data: Keyword arguments passed through to the template as variables.
+:return: A ``fastapi.Response`` containing the rendered HTML.
+:raises FastAPIChameleonException: If ``global_init()`` has not been called.
+
+
+## Error responses
+
+Short-circuit a view to render a friendly error page with the right status code.
+
+
+not_found(four04template_file: str = 'errors/404.pt')
+
+Short-circuit the current view and render a friendly 404 page.
+
+Call this from inside a ``template()``-decorated view when a resource cannot be
+found. It raises an exception that the decorator catches and turns into an HTTP
+404 response rendered from ``four04template_file``. This function never returns
+normally.
+
+:param str four04template_file: The template to render for the 404 response (path
+    relative to the template folder). Defaults to ``errors/404.pt``.
+:raises FastAPIChameleonNotFoundException: Always; this is how the 404 is signalled
+    to the decorator.
+
+generic_error(template_file: str, status_code: int, template_data: Optional[dict] = None)
+
+Short-circuit the current view and render an error page with a custom status code.
+
+Like ``not_found()``, but for any error: call it from inside a
+``template()``-decorated view to render ``template_file`` with the HTTP
+``status_code`` you choose (for example ``401`` or ``500``). The decorator catches
+the raised exception and builds the response. This function never returns normally.
+
+:param str template_file: The error template to render (path relative to the
+    template folder).
+:param int status_code: The HTTP status code to return (for example
+    ``fastapi.status.HTTP_401_UNAUTHORIZED``).
+:param dict template_data: Optional variables passed to the template. Defaults to
+    ``None`` (an empty context).
+:raises FastAPIChameleonGenericException: Always; this is how the error is signalled
+    to the decorator.
+
+
+## Exceptions
+
+Exception types raised by the library (the error helpers raise these internally).
+
+
+FastAPIChameleonException
+
+Base class for every error raised by fastapi-chameleon.
+
+Raised directly for configuration and rendering problems, such as calling
+``global_init()`` with a missing or invalid template folder, rendering before
+``global_init()`` has run, or returning an unsupported type from a decorated view.
+The control-flow exceptions below subclass it, so catching this type catches them all.
+
+FastAPIChameleonNotFoundException(message: Optional[str] = None, four04template_file: str = 'errors/404.pt')
+
+Signals a 404 response from inside a decorated view.
+
+Raised by ``not_found()`` and caught by the ``template()`` decorator, which renders
+``template_file`` with an HTTP 404 status. You normally raise it indirectly via
+``not_found()`` rather than constructing it yourself.
+
+:ivar str template_file: The template to render for the 404 response.
+:ivar message: The optional human-readable message describing the error.
+
+FastAPIChameleonGenericException(template_file: str, status_code: int, message: Optional[str] = None, template_data: Optional[dict] = None)
+
+Signals an arbitrary error response from inside a decorated view.
+
+Raised by ``generic_error()`` and caught by the ``template()`` decorator, which
+renders ``template_file`` with the chosen ``status_code``. You normally raise it
+indirectly via ``generic_error()`` rather than constructing it yourself.
+
+:ivar str template_file: The template to render for the error response.
+:ivar int status_code: The HTTP status code to return.
+:ivar message: The optional human-readable message describing the error.
+:ivar template_data: Optional variables passed to the template when rendering.

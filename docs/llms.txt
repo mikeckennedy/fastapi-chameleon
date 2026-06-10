@@ -1,0 +1,31 @@
+# fastapi_chameleon
+
+> Adds integration of the Chameleon template language to FastAPI.
+
+## Docs
+
+### API Reference
+
+#### Setup
+> Point the library at your Chameleon templates folder once at app startup.
+
+- [global_init](https://mkennedy.codes/docs/fastapi-chameleon/reference/global_init.html): Initialize the Chameleon template engine for your app
+
+#### Rendering views
+> Decorate FastAPI view functions to render templates, or build a response directly.
+
+- [template](https://mkennedy.codes/docs/fastapi-chameleon/reference/template.html): Decorate a FastAPI view method to render an HTML response
+- [response](https://mkennedy.codes/docs/fastapi-chameleon/reference/response.html): Render a template and return it as a FastAPI response directly
+
+#### Error responses
+> Short-circuit a view to render a friendly error page with the right status code.
+
+- [not_found](https://mkennedy.codes/docs/fastapi-chameleon/reference/not_found.html): Short-circuit the current view and render a friendly 404 page
+- [generic_error](https://mkennedy.codes/docs/fastapi-chameleon/reference/generic_error.html): Short-circuit the current view and render an error page with a custom status code
+
+#### Exceptions
+> Exception types raised by the library (the error helpers raise these internally).
+
+- [exceptions.FastAPIChameleonException](https://mkennedy.codes/docs/fastapi-chameleon/reference/exceptions.FastAPIChameleonException.html)
+- [exceptions.FastAPIChameleonNotFoundException](https://mkennedy.codes/docs/fastapi-chameleon/reference/exceptions.FastAPIChameleonNotFoundException.html)
+- [exceptions.FastAPIChameleonGenericException](https://mkennedy.codes/docs/fastapi-chameleon/reference/exceptions.FastAPIChameleonGenericException.html)

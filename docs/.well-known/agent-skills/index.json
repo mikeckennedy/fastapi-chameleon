@@ -1,0 +1,11 @@
+{
+  "skills": [
+    {
+      "name": "fastapi-chameleon",
+      "description": "Adds integration of the Chameleon template language to FastAPI. Use when writing Python code that uses the fastapi_chameleon package.",
+      "files": [
+        "SKILL.md"
+      ]
+    }
+  ]
+}
