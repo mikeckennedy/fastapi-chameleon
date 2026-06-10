@@ -71,6 +71,10 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# Great Docs ephemeral build directory (regenerated each build; the published site
+# is mirrored into the committed repo-root docs/ folder by scripts/build_docs.py).
+/great-docs/
+
 # PyBuilder
 target/
 

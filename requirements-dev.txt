@@ -6,3 +6,7 @@ twine
 hatchling
 hatch-vcs>=0.3.0
 uvicorn
+
+# Documentation site generator (Great Docs / Quarto). Needs Python >= 3.11;
+# marker keeps `-r requirements-dev.txt` installable on 3.10.
+great-docs; python_version >= '3.11'

@@ -26,6 +26,7 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://github.com/mikeckennedy/fastapi-chameleon"
+"Documentation" = "https://mkennedy.codes/docs/fastapi-chameleon/"
 
 [tool.setuptools]
 packages = ["fastapi_chameleon"]
