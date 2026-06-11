@@ -95,7 +95,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">FastAPI Chameleon <span class="version-badge" title="Released 2025-04-04">v0.1.17</span></span>
+    <span class="navbar-title">FastAPI Chameleon <span class="version-badge" title="Released 2026-06-11">v0.1.18</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -135,7 +135,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#v0.1.17" id="toc-v0.1.17" class="nav-link active" data-scroll-target="#v0.1.17">v0.1.17</a></li>
+  <li><a href="#v0.1.18" id="toc-v0.1.18" class="nav-link active" data-scroll-target="#v0.1.18">v0.1.18</a>
+  <ul class="collapse">
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">[0.1.18]</a></li>
+  </ul></li>
+  <li><a href="#v0.1.17" id="toc-v0.1.17" class="nav-link" data-scroll-target="#v0.1.17">v0.1.17</a></li>
   </ul>
 </nav>
     </div>
@@ -162,6 +166,31 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>This changelog is generated automatically from <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases">GitHub Releases</a>.</p>
+<section id="v0.1.18" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.18</h1>
+<p><em>2026-06-11</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.18">GitHub</a></p>
+<section id="section" class="level2">
+<h2 class="anchored" data-anchor-id="section">[0.1.18]</h2>
+<section id="added" class="level3">
+<h3 class="anchored" data-anchor-id="added">Added</h3>
+<ul>
+<li>Ship inline type information to consumers via a <code>py.typed</code> marker (PEP 561), so downstream type checkers can see the package’s annotations.</li>
+<li>New <code>dev</code> optional-dependencies extra (<code>pip install fastapi-chameleon[dev]</code>) bundling <code>pytest</code>, <code>ty</code>, and <code>pyrefly</code>.</li>
+<li>A full documentation site built with Great Docs (Quarto), published at <a href="https://mkennedy.codes/docs/fastapi-chameleon/" class="uri">https://mkennedy.codes/docs/fastapi-chameleon/</a>, including an auto-generated API reference from the package docstrings.</li>
+<li>Expanded PyPI keywords for better discoverability (templating, rendering, decorator, ASGI, Starlette, and more).</li>
+</ul>
+</section>
+<section id="changed" class="level3">
+<h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Tightened type hints across the public API so the package now passes both <code>ty</code> and <code>pyrefly</code> cleanly: <code>NoReturn</code> on <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> / <a href="reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a>, typed decorator wrappers and casts, and annotations on <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>, <code>clear()</code>, and <a href="reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a>.</li>
+<li>Removed the inaccurate <code>dict</code> element type on <code>**template_data</code>.</li>
+<li>Expanded Sphinx-style docstrings for the public API (<a href="reference/template.html#fastapi_chameleon.template" class="gdls-link gdls-code">template</a>, the internal render path, <code>clear</code>) and added <code>:ivar:</code> documentation to the exception types.</li>
+<li>Rewrote <code>README.md</code> with a runnable quick start, full public-API reference, friendly-error and view-testing guides, dev-mode/caching notes, a docs badge, and corrected example-app and contributing instructions.</li>
+</ul>
+</section>
+</section>
+</section>
 <section id="v0.1.17" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.17</h1>
 <p><em>2025-04-04</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.17">GitHub</a></p>
