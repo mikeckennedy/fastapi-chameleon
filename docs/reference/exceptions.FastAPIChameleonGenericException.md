@@ -7,7 +7,9 @@ Signals an arbitrary error response from inside a decorated view.
 Usage
 
 ``` python
-exceptions.FastAPIChameleonGenericException()
+exceptions.FastAPIChameleonGenericException(
+    template_file, status_code, message=None, template_data=None
+)
 ```
 
 

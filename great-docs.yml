@@ -44,6 +44,38 @@ include_in_header:
   - text: |
       <script async src="https://uma.mkennedy.codes/script.js" data-website-id="fc9b6770-3b44-4073-944e-4a4f0e79f66a"></script>
 
+skill:
+  # Hand-written prose injected into the generated skill body — things the API
+  # signatures can't convey. Adapted from the fastapi-chameleon_reference.md agent guide.
+  extra_body: skill_extra_body.md
+  gotchas:
+    - "global_init() is one-shot by default: with cache_init=True, later calls are silently ignored. Pass cache_init=False or call fastapi_chameleon.engine.clear() to re-initialize."
+    - "The bare @template form resolves the template file name once, at decoration time — if global_init() hasn't run yet, the folder silently defaults to 'templates' relative to the CWD and a later global_init() won't re-resolve it."
+    - "Decorated views must return a dict (the template model) or a fastapi.Response; any other return type raises FastAPIChameleonException at request time."
+    - "The decorator keyword is mimetype (not content_type), and @template has no status_code parameter — use response() when you need a non-200 status."
+    - "Error pages from not_found()/generic_error() always render as text/html at their own status; the decorator's mimetype does not apply."
+    - "not_found() renders the 404 template with an empty model; only generic_error() can pass template_data into the error template."
+    - "not_found()/generic_error() only work below a @template-decorated view — from an undecorated route or middleware the exception goes unhandled and FastAPI returns a 500."
+  best_practices:
+    - "Call global_init(template_folder, auto_reload=dev_mode) exactly once at app startup, before view modules are imported/registered."
+    - "Put the route decorator outermost: @app.get(...) above @fastapi_chameleon.template(...), which sits directly on the view function."
+    - "Return plain dicts from views; return a fastapi.Response only for redirects and other pass-through cases."
+    - "Enable auto_reload only during development so templates stay cached in production."
+    - "Use fastapi_chameleon.response() where the decorator doesn't fit — custom status codes, non-HTML mimetypes, or rendering outside a view."
+  decision_table:
+    - need: "Render a Chameleon template from a FastAPI view (sync or async)"
+      use: "@fastapi_chameleon.template('home/index.pt') on the view function"
+    - need: "Return a friendly HTML 404 page instead of FastAPI's JSON default"
+      use: "fastapi_chameleon.not_found()"
+    - need: "Render any error template with any status code (optionally with data)"
+      use: "fastapi_chameleon.generic_error(template_file, status_code, template_data={...})"
+    - need: "Build a rendered Response with a custom status code or mimetype"
+      use: "fastapi_chameleon.response(template_file, mimetype=..., status_code=..., **model)"
+    - need: "Redirect (or return JSON) from a decorated view"
+      use: "return a fastapi.Response subclass — the template is skipped"
+    - need: "Get rendered HTML as a plain string"
+      use: "fastapi_chameleon.engine.render(template_file, **model)"
+
 # Author metadata for the landing-page sidebar.
 authors:
   - name: Michael Kennedy

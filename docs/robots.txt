@@ -4,3 +4,7 @@ User-agent: *
 Allow: /
 
 Sitemap: https://mkennedy.codes/docs/fastapi-chameleon/sitemap.xml
+
+# AI agent context files
+Llms-txt: https://mkennedy.codes/docs/fastapi-chameleon/llms.txt
+Llms-txt: https://mkennedy.codes/docs/fastapi-chameleon/llms-full.txt

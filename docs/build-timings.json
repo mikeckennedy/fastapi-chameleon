@@ -1,75 +1,75 @@
 {
-  "build_time": "2026-06-11T17:26:38Z",
-  "total_seconds": 6.532,
+  "build_time": "2026-07-22T02:17:21Z",
+  "total_seconds": 26.519,
   "pages": [
     {
-      "page": "reference/generic_error.qmd",
-      "seconds": 2.28,
-      "frozen": false
-    },
-    {
-      "page": "index.qmd",
-      "seconds": 1.658,
-      "frozen": false
-    },
-    {
-      "page": "reference/global_init.qmd",
-      "seconds": 0.234,
-      "frozen": false
-    },
-    {
-      "page": "reference/template.qmd",
-      "seconds": 0.23,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonException.qmd",
-      "seconds": 0.22,
-      "frozen": false
-    },
-    {
-      "page": "reference/not_found.qmd",
-      "seconds": 0.218,
-      "frozen": false
-    },
-    {
-      "page": "reference/index.qmd",
-      "seconds": 0.217,
+      "page": "skills.qmd",
+      "seconds": 8.443,
       "frozen": false
     },
     {
       "page": "changelog.qmd",
-      "seconds": 0.216,
+      "seconds": 4.833,
       "frozen": false
     },
     {
-      "page": "reference/response.qmd",
-      "seconds": 0.215,
+      "page": "package-info.qmd",
+      "seconds": 1.697,
       "frozen": false
     },
     {
-      "page": "skill.md",
-      "seconds": 0.214,
+      "page": "reference/template.qmd",
+      "seconds": 1.552,
       "frozen": false
     },
     {
-      "page": "skills.qmd",
-      "seconds": 0.212,
+      "page": "reference/not_found.qmd",
+      "seconds": 1.324,
       "frozen": false
     },
     {
-      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
-      "seconds": 0.212,
+      "page": "index.qmd",
+      "seconds": 1.266,
       "frozen": false
     },
     {
       "page": "reference/exceptions.FastAPIChameleonNotFoundException.qmd",
-      "seconds": 0.21,
+      "seconds": 1.205,
+      "frozen": false
+    },
+    {
+      "page": "reference/global_init.qmd",
+      "seconds": 1.186,
+      "frozen": false
+    },
+    {
+      "page": "reference/index.qmd",
+      "seconds": 1.175,
+      "frozen": false
+    },
+    {
+      "page": "reference/generic_error.qmd",
+      "seconds": 0.987,
       "frozen": false
     },
     {
       "page": "license.qmd",
-      "seconds": 0.196,
+      "seconds": 0.887,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonException.qmd",
+      "seconds": 0.684,
+      "frozen": false
+    },
+    {
+      "page": "reference/response.qmd",
+      "seconds": 0.663,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
+      "seconds": 0.617,
       "frozen": false
     }
   ]

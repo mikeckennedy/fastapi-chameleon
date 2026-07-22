@@ -7,7 +7,9 @@ Signals a 404 response from inside a decorated view.
 Usage
 
 ``` python
-exceptions.FastAPIChameleonNotFoundException()
+exceptions.FastAPIChameleonNotFoundException(
+    message=None, four04template_file="errors/404.pt"
+)
 ```
 
 
