@@ -1,6 +1,13 @@
 """fastapi-chameleon - Adds integration of the Chameleon template language to FastAPI."""
 
-__version__ = '0.1.17'
+from importlib.metadata import PackageNotFoundError, version
+
+# Read the version from the installed package metadata so pyproject.toml stays the single source of truth.
+try:
+    __version__ = version('fastapi_chameleon')
+except PackageNotFoundError:  # Running from a source tree without an installed distribution.
+    __version__ = '0.0.0'
+
 __author__ = 'Michael Kennedy <michael@talkpython.fm>'
 __all__ = [
     'template',
