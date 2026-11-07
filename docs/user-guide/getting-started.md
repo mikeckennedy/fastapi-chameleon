@@ -1,8 +1,12 @@
 # Getting Started
 
-FastAPI answers every request with JSON unless you tell it otherwise. If you are building a site that people look at in a browser, you want server-rendered HTML, and that means a template engine wired into your view functions. fastapi-chameleon does that wiring for the [Chameleon](https://chameleon.readthedocs.io/) template language with one decorator: the view returns a `dict`, the decorator renders it through a template, and FastAPI sends the HTML.
+Every FastAPI app is born speaking JSON. Ask it for `/`, and it answers with curly braces. That is perfect for an API and slightly absurd for a website, where the thing on the other end of the request is a person with a browser, expecting a page.
 
-If you prefer Jinja, use the sister project [fastapi-jinja](https://github.com/AGeekInside/fastapi-jinja) instead. The two share the same design.
+fastapi-chameleon teaches your app a second language. You keep writing FastAPI views the way you always have, with path parameters, dependencies, async if you like. The difference is one decorator on top, and instead of returning JSON you return a plain `dict`. The decorator hands that dict to a [Chameleon](https://chameleon.readthedocs.io/) template, the template turns it into HTML, and FastAPI sends the page. Views decide, templates show. That is the whole arrangement.
+
+Throughout this guide we will build a small site for a secondhand bookshop called Shelf Life. It has a home page, a catalog, a login form, and the occasional book that sold yesterday and now needs a graceful 404. Every mechanism in the package shows up somewhere in that story.
+
+If Jinja is your template language of choice, the sister project [fastapi-jinja](https://github.com/AGeekInside/fastapi-jinja) has the same shape and the same decorator-first design. Everything here will feel familiar there.
 
 
 # Install
@@ -13,12 +17,12 @@ uv add fastapi-chameleon
 pip install fastapi-chameleon
 ```
 
-The package requires Python 3.10 or newer and depends only on `fastapi` and `chameleon`. You also need an ASGI server such as `uvicorn` to run the app.
+Python 3.10 or newer. The package depends on exactly two things, `fastapi` and `chameleon`, and nothing else. You also need an ASGI server such as `uvicorn` to actually serve requests.
 
 
 # A first page
 
-Two files are enough. The template folder is passed to [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) once, and every template path you use later is relative to it.
+Two files are enough to open the shop. The template folder is handed to [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) once, and from then on every template path you write is relative to it.
 
 **`main.py`**
 
@@ -54,7 +58,7 @@ if __name__ == '__main__':
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello</title>
+    <title>Shelf Life</title>
 </head>
 <body>
 <h1>Hello world</h1>
@@ -63,19 +67,19 @@ if __name__ == '__main__':
 </html>
 ```
 
-Run it with `python main.py` or `uvicorn main:app`, then open `http://127.0.0.1:8000`. Both ways work here because [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) runs at import time, before the decorated view is defined.
+Run it with `python main.py` or `uvicorn main:app` and open `http://127.0.0.1:8000`. Both commands work here for a reason worth noticing: [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) runs at import time, before the decorated view is defined. Keep that order and the package never surprises you.
 
 
 # What you get back
 
-The decorated function now returns a `fastapi.Response`. For the request above it carries a `200` status, a `text/html` content type, and this body:
+The decorated function no longer returns a dict. It returns a `fastapi.Response` carrying a `200` status, a `text/html` content type, and this body:
 
 ``` html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello</title>
+    <title>Shelf Life</title>
 </head>
 <body>
 <h1>Hello world</h1>
@@ -84,21 +88,23 @@ The decorated function now returns a `fastapi.Response`. For the request above i
 </html>
 ```
 
-Each key in the returned `dict` became a variable in the template, so `${message}` was replaced by the string the view returned. That is the whole contract: views return data, templates turn it into HTML.
+Each key in the dict became a variable in the template. `${message}` was replaced by the string the view returned. There is no context object to build, no `TemplateResponse` to construct, no request to thread through by hand. The dict is the model.
 
-Two things in the example are easy to miss and matter later:
+Two details in that example are small now and important later:
 
-- The route decorator `@app.get(...)` sits on the outside. `@fastapi_chameleon.template(...)` is applied directly to the function.
-- `auto_reload=True` makes Chameleon re-read templates you edit, which is what you want while developing. Turn it off in production. See [Configuration](configuration.md).
+- **Decorator order.** The route decorator `@app.get(...)` is on the outside. `@fastapi_chameleon.template(...)` sits directly on the function. FastAPI must see the already-decorated view.
+- **`auto_reload=True`.** Chameleon compiles templates once and caches them, which is what you want in production. While you are editing templates every thirty seconds, you want them re-read. This flag is the switch. See [Configuration](configuration.md).
 
 
 # Where to go next
 
-- [Decorating Views](views.md): the three decorator forms, what a view may return, redirects, and [response()](../reference/response.md#fastapi_chameleon.response).
-- [Writing Templates](templates.md): Chameleon syntax, shared layouts, and the project layout the name inference expects.
-- [Friendly Error Pages](error-pages.md): replace FastAPI's JSON 404 with your own HTML page.
-- [Troubleshooting](troubleshooting.md): every error the package raises and how to fix it.
-- [Testing and CI](testing.md): call views directly in pytest, no HTTP client needed.
-- [Configuration](configuration.md): every [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) option, verified.
-- [How It Works](how-it-works.md): module-global engine state, decoration-time decisions, exception-based error pages.
+The rest of the guide follows the shop as it grows.
+
+- [Decorating Views](views.md): the three decorator forms, what a view may return, how a login form redirects, and [response()](../reference/response.md#fastapi_chameleon.response) for when you want the wheel yourself.
+- [Writing Templates](templates.md): Chameleon syntax for people arriving from Jinja, shared layouts with METAL, and the folder layout the name inference expects.
+- [Friendly Error Pages](error-pages.md): the book that sold yesterday, and how to say so in HTML instead of JSON.
+- [Troubleshooting](troubleshooting.md): every error the package or Chameleon can raise, what it is really telling you, and the fix.
+- [Testing and CI](testing.md): views are plain callables, so tests need no server and no port.
+- [Configuration](configuration.md): every [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) option, verified by running it.
+- [How It Works](how-it-works.md): what happens at import time, what happens per request, and why error pages are exceptions.
 - [FAQ](faq.md).

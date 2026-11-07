@@ -121,15 +121,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="testing.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/testing.html">
-  <meta name="description" content="Decorated views stay plain Python callables. You can call them directly in a test, without TestClient or a running server, and inspect the...">
+  <meta name="description" content="Here is the pleasant secret of this package: a decorated view is still just a Python function. No server, no port, no TestClient, no fixture that spins...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Testing and CI – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="Decorated views stay plain Python callables. You can call them directly in a test, without TestClient or a running server, and inspect the...">
+  <meta property="og:description" content="Here is the pleasant secret of this package: a decorated view is still just a Python function. No server, no port, no TestClient, no fixture that spins...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/testing.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Testing and CI – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="Decorated views stay plain Python callables. You can call them directly in a test, without TestClient or a running server, and inspect the...">
+  <meta name="twitter:description" content="Here is the pleasant secret of this package: a decorated view is still just a Python function. No server, no port, no TestClient, no fixture that spins...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -308,10 +308,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Decorated views stay plain Python callables. You can call them directly in a test, without <code>TestClient</code> or a running server, and inspect the <code>fastapi.Response</code> they return. This is how the package tests itself.</p>
+<p>Here is the pleasant secret of this package: a decorated view is still just a Python function. No server, no port, no <code>TestClient</code>, no fixture that spins up an app. You call the view, you get back a <code>fastapi.Response</code>, and you look inside it. This is how the package tests itself, and it is how Shelf Life’s test suite runs in well under a second.</p>
 <section id="a-fixture-for-the-engine" class="level1">
 <h1>A fixture for the engine</h1>
-<p>Engine state is module-global, so give each test a fresh engine and clear it afterwards:</p>
+<p>The engine is module-global, one per process, so tests need two things from a fixture: initialise it before the test, and clear it afterwards so the next test starts clean.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># conftest.py</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -328,7 +328,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Two details keep this reliable:</p>
 <ul>
 <li><a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> ignores repeat calls by default. If a test calls it directly with a different folder, pass <code>cache_init=False</code>.</li>
-<li>Always clear in teardown. A test that asserts “rendering before <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> raises” will pass or fail depending on what ran before it otherwise.</li>
+<li>Always clear in teardown. A test that asserts “rendering before <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> raises” will pass or fail depending on which test ran before it otherwise, and flaky tests that depend on ordering are the kind you only notice in CI on a Friday.</li>
 </ul>
 </section>
 <section id="calling-views-directly" class="level1">
@@ -369,11 +369,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    resp <span class="op">=</span> item(<span class="dv">42</span>)</span>
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> resp.status_code <span class="op">==</span> <span class="dv">404</span></span></code></pre></div>
-<p>Pass view arguments positionally or by keyword, exactly as FastAPI would. If a view takes a <code>Request</code>, build one with <code>fastapi.Request(scope)</code> or use <code>TestClient</code> for that test.</p>
+<p>Pass view arguments positionally or by keyword, exactly as FastAPI would. Async views are one <code>asyncio.run()</code> away. If a view takes a <code>Request</code>, build one with <code>fastapi.Request(scope)</code> or use <code>TestClient</code> for that particular test.</p>
 </section>
 <section id="through-fastapi" class="level1">
 <h1>Through FastAPI</h1>
-<p>When you want to test routing, dependencies, and middleware together, use FastAPI’s <code>TestClient</code> against the real app. Decorated views need nothing special:</p>
+<p>When the thing under test is the routing, the dependencies, or the middleware rather than the view, use FastAPI’s <code>TestClient</code> against the real app. Decorated views need nothing special:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fastapi.testclient <span class="im">import</span> TestClient</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> my_app.main <span class="im">import</span> app</span>
@@ -388,7 +388,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="ci" class="level1">
 <h1>CI</h1>
-<p>The package has no compiled parts, so CI is a pytest run per interpreter. A GitHub Actions matrix:</p>
+<p>The package has no compiled parts and two dependencies, so CI is a pytest run per interpreter and nothing more. A GitHub Actions matrix:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">jobs</span><span class="kw">:</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">test</span><span class="kw">:</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">runs-on</span><span class="kw">:</span><span class="at"> ubuntu-latest</span></span>

@@ -2,7 +2,7 @@
 title: "Configuration"
 ---
 
-All configuration happens through `global_init()`. There are no environment variables, no settings file, and no command-line interface.
+There is pleasingly little to configure. One function, three parameters, and no environment variables, settings files, or command-line flags hiding behind them. Everything the engine knows, it learned from a single `global_init()` call at startup.
 
 ## `global_init()` parameters
 
@@ -12,9 +12,11 @@ All configuration happens through `global_init()`. There are no environment vari
 | `auto_reload` | `bool` | `False` | When `True`, Chameleon checks template files for changes on each use and recompiles them. When `False`, each template is compiled once per process. |
 | `cache_init` | `bool` | `True` | When `True`, a call made after the engine is already initialized is ignored. When `False`, the call replaces the loader and folder. |
 
-Each row was checked against the code and by running it. The `auto_reload` flag is passed straight to Chameleon's `PageTemplateLoader`.
+Every row in that table was checked against the source and then by running it. The `auto_reload` flag is handed straight to Chameleon's `PageTemplateLoader`, so its behaviour is Chameleon's behaviour.
 
 ## Calling `global_init()` more than once
+
+This is the one place people get tripped up, because the default is to politely ignore you.
 
 | Situation | Result |
 |---|---|
@@ -22,7 +24,7 @@ Each row was checked against the code and by running it. The `auto_reload` flag 
 | Second call, `cache_init=False` | New loader and folder take effect for every template rendered from now on. |
 | `engine.clear()` then `global_init()` | Same as a first call. |
 
-A consequence worth knowing: you cannot change `auto_reload` by calling `global_init()` again with the default `cache_init`. Pass `cache_init=False` or call `fastapi_chameleon.engine.clear()` first.
+The consequence: you cannot flip `auto_reload` by calling `global_init()` a second time with the defaults. The engine will keep whatever it was told first. Pass `cache_init=False`, or call `fastapi_chameleon.engine.clear()` and start over. This design is deliberate. It means a library or a plugin that calls `global_init()` defensively cannot stomp on the app's own configuration.
 
 ## Development versus production
 
@@ -38,7 +40,7 @@ BASE_DIR = Path(__file__).resolve().parent
 fastapi_chameleon.global_init(BASE_DIR / 'templates', auto_reload=dev_mode)
 ```
 
-With `auto_reload=False`, Chameleon compiles each template to Python the first time it is used and reuses the compiled version for the life of the process. That is the setting you want under load. With `auto_reload=True`, every use checks the file's modification time, which is cheap but not free.
+With `auto_reload=False`, Chameleon compiles each template to Python the first time it is used and reuses that compiled version for the life of the process. Rendering a page becomes a function call, which is why Chameleon has a reputation for speed. That is the setting you want under load. With `auto_reload=True`, every use checks the file's modification time first. Cheap, but not free, and pointless on a server where nobody is editing templates.
 
 ## The decorator
 
@@ -49,11 +51,11 @@ With `auto_reload=False`, Chameleon compiles each template to Python the first t
 | `template_file` | `None` | Template path relative to the folder. `None` means infer `{module}/{function}.html`, then `.pt`. |
 | `mimetype` | `'text/html'` | Content type of the response for a rendered `dict`. Ignored for error pages. |
 
-There is no `status_code` parameter on the decorator. A rendered dict is always a `200`. Use `response()` for another status, or `generic_error()` for error pages.
+There is no `status_code` parameter on the decorator, and that is on purpose. A rendered dict is always a `200`. For another status use `response()`, and for error pages use `generic_error()`, each of which makes the status visible at the call site instead of hiding it in a decorator argument.
 
 ## Where `global_init()` goes
 
-Call it at import time in the module that creates the app, before the view modules are imported. If views are registered in a separate module, the order looks like this:
+Call it at import time in the module that creates the app, before the view modules are imported. When views live in their own module, the order looks like this:
 
 ```python
 # main.py
@@ -68,4 +70,4 @@ from views import home  # noqa: E402  imported after init on purpose
 app.include_router(home.router)
 ```
 
-The order matters only for views that let the decorator infer the template name. Views with explicit template names resolve them at request time against whatever folder is configured then.
+The order matters only for views that let the decorator infer the template name. Views with explicit template names resolve them at request time against whatever folder is configured then, so they are indifferent to import order.

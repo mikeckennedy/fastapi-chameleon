@@ -86,15 +86,15 @@ ul.task-list li input[type="checkbox"] {
 
   <link rel="alternate" type="text/markdown" href="how-it-works.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/how-it-works.html">
-  <meta name="description" content="The whole library is three small modules. Knowing what happens at import time versus request time explains every gotcha in the other pages.">
+  <meta name="description" content="The whole library is three short modules, and you can read engine.py in the time it takes to make coffee. But the behaviour that matters is about...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="How It Works – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="The whole library is three small modules. Knowing what happens at import time versus request time explains every gotcha in the other pages.">
+  <meta property="og:description" content="The whole library is three short modules, and you can read engine.py in the time it takes to make coffee. But the behaviour that matters is about...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/how-it-works.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="How It Works – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="The whole library is three small modules. Knowing what happens at import time versus request time explains every gotcha in the other pages.">
+  <meta name="twitter:description" content="The whole library is three short modules, and you can read engine.py in the time it takes to make coffee. But the behaviour that matters is about...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -244,10 +244,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#module-global-engine-state" id="toc-module-global-engine-state" class="nav-link active" data-scroll-target="#module-global-engine-state">Module-global engine state</a></li>
-  <li><a href="#decoration-time" id="toc-decoration-time" class="nav-link" data-scroll-target="#decoration-time">Decoration time</a></li>
-  <li><a href="#request-time" id="toc-request-time" class="nav-link" data-scroll-target="#request-time">Request time</a></li>
-  <li><a href="#error-pages-are-exceptions" id="toc-error-pages-are-exceptions" class="nav-link" data-scroll-target="#error-pages-are-exceptions">Error pages are exceptions</a></li>
+  <li><a href="#act-one-the-engine" id="toc-act-one-the-engine" class="nav-link active" data-scroll-target="#act-one-the-engine">Act one: the engine</a></li>
+  <li><a href="#act-two-decoration-time" id="toc-act-two-decoration-time" class="nav-link" data-scroll-target="#act-two-decoration-time">Act two: decoration time</a></li>
+  <li><a href="#act-three-request-time" id="toc-act-three-request-time" class="nav-link" data-scroll-target="#act-three-request-time">Act three: request time</a></li>
+  <li><a href="#the-emergency-exits" id="toc-the-emergency-exits" class="nav-link" data-scroll-target="#the-emergency-exits">The emergency exits</a></li>
   <li><a href="#template-caching" id="toc-template-caching" class="nav-link" data-scroll-target="#template-caching">Template caching</a></li>
   <li><a href="#source" id="toc-source" class="nav-link" data-scroll-target="#source">Source</a></li>
   </ul>
@@ -275,43 +275,44 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The whole library is three small modules. Knowing what happens at import time versus request time explains every gotcha in the other pages.</p>
-<section id="module-global-engine-state" class="level1">
-<h1>Module-global engine state</h1>
-<p><a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> stores two module-level values in <code>fastapi_chameleon.engine</code>: a Chameleon <code>PageTemplateLoader</code> and the template folder path. Every render goes through that one loader. There is one engine per process, which is why <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> is called once and why tests clear it between runs with <code>engine.clear()</code>.</p>
+<p>The whole library is three short modules, and you can read <code>engine.py</code> in the time it takes to make coffee. But the behaviour that matters is about timing: what happens once when your app imports, what happens on every request, and how an error page gets from a function three layers deep back up to the browser. Know those three and every rule in the rest of this guide becomes obvious.</p>
+<section id="act-one-the-engine" class="level1">
+<h1>Act one: the engine</h1>
+<p><a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> stores two module-level values in <code>fastapi_chameleon.engine</code>: a Chameleon <code>PageTemplateLoader</code> and the template folder path. That is the entire state of the library. Every render in the process goes through that one loader, which is why <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> is called once, why a second call is ignored by default, and why tests clear it between runs with <code>engine.clear()</code>.</p>
+<p>Think of it as the shop’s single key cabinet. Everyone who needs a template goes to the same cabinet, and you set up the cabinet before opening the doors.</p>
 </section>
-<section id="decoration-time" class="level1">
-<h1>Decoration time</h1>
-<p><code>@template(...)</code> runs when the view module is imported. At that moment it decides three things:</p>
+<section id="act-two-decoration-time" class="level1">
+<h1>Act two: decoration time</h1>
+<p><code>@template(...)</code> runs when the view module is imported, not when a request arrives. At that moment it makes three decisions and never revisits them:</p>
 <ol type="1">
 <li><strong>Which template.</strong> An explicit name is kept as-is. A missing name is derived from the view’s module and function name, and the <code>.html</code> or <code>.pt</code> choice is made by checking the filesystem once.</li>
-<li><strong>Sync or async.</strong> <code>inspect.iscoroutinefunction</code> picks a synchronous or asynchronous wrapper. The wrapper calls or awaits the view, then renders.</li>
-<li><strong>The signature.</strong> The wrapper is wrapped with <code>functools.wraps</code>, and <a href="../reference/template.html#fastapi_chameleon.template" class="gdls-link gdls-code">template()</a> is typed with ParamSpec-based overloads, so FastAPI’s dependency injection and type checkers see the original parameters.</li>
+<li><strong>Sync or async.</strong> <code>inspect.iscoroutinefunction</code> picks a synchronous or asynchronous wrapper. The async wrapper awaits the view, the sync one calls it, and both then render.</li>
+<li><strong>The signature.</strong> The wrapper is wrapped with <code>functools.wraps</code>, and <a href="../reference/template.html#fastapi_chameleon.template" class="gdls-link gdls-code">template()</a> is typed with ParamSpec-based overloads, so FastAPI’s dependency injection and your type checker both see the original parameters, not <code>*args, **kwargs</code>.</li>
 </ol>
-<p>Because the template folder is read at decoration time for name inference, <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> has to run before the view module is imported. If it has not, the folder defaults to <code>templates</code> relative to the current working directory.</p>
+<p>Because the template folder is read at decoration time for name inference, <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> has to run before the view module is imported. If it has not, the folder defaults to <code>templates</code> relative to the current working directory. This is the single most important timing rule in the package, and it only bites the inferred-name forms.</p>
 </section>
-<section id="request-time" class="level1">
-<h1>Request time</h1>
-<p>The wrapper calls the view and looks at the return value:</p>
+<section id="act-three-request-time" class="level1">
+<h1>Act three: request time</h1>
+<p>A request comes in. FastAPI resolves the dependencies and calls the wrapper, which calls the view and looks at what came back:</p>
 <ul>
-<li>A <code>fastapi.Response</code> is returned as-is.</li>
-<li>A <code>dict</code> is passed to the loader as the template model and the HTML comes back in a <code>fastapi.Response</code> with the decorator’s <code>mimetype</code> and status <code>200</code>.</li>
+<li>A <code>fastapi.Response</code> is returned as-is. The template is never touched.</li>
+<li>A <code>dict</code> is handed to the loader as the template model, and the HTML comes back in a <code>fastapi.Response</code> with the decorator’s <code>mimetype</code> and status <code>200</code>.</li>
 <li>Anything else raises <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a>.</li>
 </ul>
 <p>Rendering before <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> has run raises <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a> too. A template file that does not exist raises <code>ValueError</code> from Chameleon’s loader.</p>
 </section>
-<section id="error-pages-are-exceptions" class="level1">
-<h1>Error pages are exceptions</h1>
-<p><a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> do not return. They raise <a href="../reference/exceptions.FastAPIChameleonNotFoundException.html#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException" class="gdls-link gdls-code">FastAPIChameleonNotFoundException</a> or <a href="../reference/exceptions.FastAPIChameleonGenericException.html#fastapi_chameleon.exceptions.FastAPIChameleonGenericException" class="gdls-link gdls-code">FastAPIChameleonGenericException</a>, both subclasses of <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a>. The wrapper catches exactly those two types and renders the error template with the status carried by the exception, always as <code>text/html</code>. Any other exception propagates to FastAPI as usual.</p>
-<p>This is why the functions work from anywhere below a decorated view, and why they do nothing useful outside one.</p>
+<section id="the-emergency-exits" class="level1">
+<h1>The emergency exits</h1>
+<p><a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> do not return. They raise <a href="../reference/exceptions.FastAPIChameleonNotFoundException.html#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException" class="gdls-link gdls-code">FastAPIChameleonNotFoundException</a> or <a href="../reference/exceptions.FastAPIChameleonGenericException.html#fastapi_chameleon.exceptions.FastAPIChameleonGenericException" class="gdls-link gdls-code">FastAPIChameleonGenericException</a>, both subclasses of <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a>. The wrapper from act two has a <code>try</code> around the view call that catches exactly those two types, and nothing else. When it catches one, it renders the exception’s template with the exception’s status, always as <code>text/html</code>. Any other exception passes straight through to FastAPI.</p>
+<p>That is why the functions work from anywhere below a decorated view: exceptions travel up the call stack for free, so a repository can refuse a request and the decorator at the top turns the refusal into a page. It is also why they do nothing useful outside one. No wrapper, no <code>try</code>, no page.</p>
 </section>
 <section id="template-caching" class="level1">
 <h1>Template caching</h1>
-<p>Chameleon compiles each template to a Python module on first use and keeps it in memory. With <code>auto_reload=False</code> that compiled version is used for the rest of the process. With <code>auto_reload=True</code> the loader checks the file’s modification time before each use and recompiles when it changed.</p>
+<p>Chameleon compiles each template to a Python module on first use and keeps it in memory. With <code>auto_reload=False</code>, that compiled version serves every request for the rest of the process. With <code>auto_reload=True</code>, the loader checks the file’s modification time before each use and recompiles when it changed. The first request after a deploy pays the compile cost; every request after that is a function call.</p>
 </section>
 <section id="source" class="level1">
 <h1>Source</h1>
-<p>The code is short and readable: <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py">engine.py</a> and <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py">exceptions.py</a>.</p>
+<p>The code is short and readable, and reading it is the fastest way to confirm anything on this page: <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py">engine.py</a> and <a href="https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py">exceptions.py</a>.</p>
 
 
 </section>

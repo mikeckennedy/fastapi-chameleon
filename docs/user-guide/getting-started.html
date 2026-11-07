@@ -120,15 +120,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="getting-started.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html">
-  <meta name="description" content="FastAPI answers every request with JSON unless you tell it otherwise. If you are building a site that people look at in a browser, you want...">
+  <meta name="description" content="Every FastAPI app is born speaking JSON. Ask it for /, and it answers with curly braces. That is perfect for an API and slightly absurd for a website,...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Getting Started – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="FastAPI answers every request with JSON unless you tell it otherwise. If you are building a site that people look at in a browser, you want...">
+  <meta property="og:description" content="Every FastAPI app is born speaking JSON. Ask it for /, and it answers with curly braces. That is perfect for an API and slightly absurd for a website,...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Getting Started – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="FastAPI answers every request with JSON unless you tell it otherwise. If you are building a site that people look at in a browser, you want...">
+  <meta name="twitter:description" content="Every FastAPI app is born speaking JSON. Ask it for /, and it answers with curly braces. That is perfect for an API and slightly absurd for a website,...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -307,18 +307,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>FastAPI answers every request with JSON unless you tell it otherwise. If you are building a site that people look at in a browser, you want server-rendered HTML, and that means a template engine wired into your view functions. fastapi-chameleon does that wiring for the <a href="https://chameleon.readthedocs.io/">Chameleon</a> template language with one decorator: the view returns a <code>dict</code>, the decorator renders it through a template, and FastAPI sends the HTML.</p>
-<p>If you prefer Jinja, use the sister project <a href="https://github.com/AGeekInside/fastapi-jinja">fastapi-jinja</a> instead. The two share the same design.</p>
+<p>Every FastAPI app is born speaking JSON. Ask it for <code>/</code>, and it answers with curly braces. That is perfect for an API and slightly absurd for a website, where the thing on the other end of the request is a person with a browser, expecting a page.</p>
+<p>fastapi-chameleon teaches your app a second language. You keep writing FastAPI views the way you always have, with path parameters, dependencies, async if you like. The difference is one decorator on top, and instead of returning JSON you return a plain <code>dict</code>. The decorator hands that dict to a <a href="https://chameleon.readthedocs.io/">Chameleon</a> template, the template turns it into HTML, and FastAPI sends the page. Views decide, templates show. That is the whole arrangement.</p>
+<p>Throughout this guide we will build a small site for a secondhand bookshop called Shelf Life. It has a home page, a catalog, a login form, and the occasional book that sold yesterday and now needs a graceful 404. Every mechanism in the package shows up somewhere in that story.</p>
+<p>If Jinja is your template language of choice, the sister project <a href="https://github.com/AGeekInside/fastapi-jinja">fastapi-jinja</a> has the same shape and the same decorator-first design. Everything here will feel familiar there.</p>
 <section id="install" class="level1">
 <h1>Install</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> add fastapi-chameleon</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># or</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install fastapi-chameleon</span></code></pre></div>
-<p>The package requires Python 3.10 or newer and depends only on <code>fastapi</code> and <code>chameleon</code>. You also need an ASGI server such as <code>uvicorn</code> to run the app.</p>
+<p>Python 3.10 or newer. The package depends on exactly two things, <code>fastapi</code> and <code>chameleon</code>, and nothing else. You also need an ASGI server such as <code>uvicorn</code> to actually serve requests.</p>
 </section>
 <section id="a-first-page" class="level1">
 <h1>A first page</h1>
-<p>Two files are enough. The template folder is passed to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> once, and every template path you use later is relative to it.</p>
+<p>Two files are enough to open the shop. The template folder is handed to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> once, and from then on every template path you write is relative to it.</p>
 <p><strong><code>main.py</code></strong></p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -347,46 +349,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">html</span><span class="ot"> lang</span><span class="op">=</span><span class="st">"en"</span><span class="dt">&gt;</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">head</span><span class="dt">&gt;</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> charset</span><span class="op">=</span><span class="st">"UTF-8"</span><span class="dt">&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Hello<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Shelf Life<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">head</span><span class="dt">&gt;</span></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">body</span><span class="dt">&gt;</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Hello world<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>Your message is <span class="dt">&lt;</span><span class="kw">strong</span><span class="dt">&gt;</span>${message}<span class="dt">&lt;/</span><span class="kw">strong</span><span class="dt">&gt;&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">body</span><span class="dt">&gt;</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">html</span><span class="dt">&gt;</span></span></code></pre></div>
-<p>Run it with <code>python main.py</code> or <code>uvicorn main:app</code>, then open <code>http://127.0.0.1:8000</code>. Both ways work here because <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> runs at import time, before the decorated view is defined.</p>
+<p>Run it with <code>python main.py</code> or <code>uvicorn main:app</code> and open <code>http://127.0.0.1:8000</code>. Both commands work here for a reason worth noticing: <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> runs at import time, before the decorated view is defined. Keep that order and the package never surprises you.</p>
 </section>
 <section id="what-you-get-back" class="level1">
 <h1>What you get back</h1>
-<p>The decorated function now returns a <code>fastapi.Response</code>. For the request above it carries a <code>200</code> status, a <code>text/html</code> content type, and this body:</p>
+<p>The decorated function no longer returns a dict. It returns a <code>fastapi.Response</code> carrying a <code>200</code> status, a <code>text/html</code> content type, and this body:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;!DOCTYPE</span> html<span class="dt">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">html</span><span class="ot"> lang</span><span class="op">=</span><span class="st">"en"</span><span class="dt">&gt;</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">head</span><span class="dt">&gt;</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> charset</span><span class="op">=</span><span class="st">"UTF-8"</span><span class="dt">&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Hello<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Shelf Life<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">head</span><span class="dt">&gt;</span></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">body</span><span class="dt">&gt;</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Hello world<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>Your message is <span class="dt">&lt;</span><span class="kw">strong</span><span class="dt">&gt;</span>Let's go Chameleon and FastAPI!<span class="dt">&lt;/</span><span class="kw">strong</span><span class="dt">&gt;&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">body</span><span class="dt">&gt;</span></span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">html</span><span class="dt">&gt;</span></span></code></pre></div>
-<p>Each key in the returned <code>dict</code> became a variable in the template, so <code>${message}</code> was replaced by the string the view returned. That is the whole contract: views return data, templates turn it into HTML.</p>
-<p>Two things in the example are easy to miss and matter later:</p>
+<p>Each key in the dict became a variable in the template. <code>${message}</code> was replaced by the string the view returned. There is no context object to build, no <code>TemplateResponse</code> to construct, no request to thread through by hand. The dict is the model.</p>
+<p>Two details in that example are small now and important later:</p>
 <ul>
-<li>The route decorator <code>@app.get(...)</code> sits on the outside. <code>@fastapi_chameleon.template(...)</code> is applied directly to the function.</li>
-<li><code>auto_reload=True</code> makes Chameleon re-read templates you edit, which is what you want while developing. Turn it off in production. See <a href="../user-guide/configuration.html">Configuration</a>.</li>
+<li><strong>Decorator order.</strong> The route decorator <code>@app.get(...)</code> is on the outside. <code>@fastapi_chameleon.template(...)</code> sits directly on the function. FastAPI must see the already-decorated view.</li>
+<li><strong><code>auto_reload=True</code>.</strong> Chameleon compiles templates once and caches them, which is what you want in production. While you are editing templates every thirty seconds, you want them re-read. This flag is the switch. See <a href="../user-guide/configuration.html">Configuration</a>.</li>
 </ul>
 </section>
 <section id="where-to-go-next" class="level1">
 <h1>Where to go next</h1>
+<p>The rest of the guide follows the shop as it grows.</p>
 <ul>
-<li><a href="../user-guide/views.html">Decorating Views</a>: the three decorator forms, what a view may return, redirects, and <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a>.</li>
-<li><a href="../user-guide/templates.html">Writing Templates</a>: Chameleon syntax, shared layouts, and the project layout the name inference expects.</li>
-<li><a href="../user-guide/error-pages.html">Friendly Error Pages</a>: replace FastAPI’s JSON 404 with your own HTML page.</li>
-<li><a href="../user-guide/troubleshooting.html">Troubleshooting</a>: every error the package raises and how to fix it.</li>
-<li><a href="../user-guide/testing.html">Testing and CI</a>: call views directly in pytest, no HTTP client needed.</li>
-<li><a href="../user-guide/configuration.html">Configuration</a>: every <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> option, verified.</li>
-<li><a href="../user-guide/how-it-works.html">How It Works</a>: module-global engine state, decoration-time decisions, exception-based error pages.</li>
+<li><a href="../user-guide/views.html">Decorating Views</a>: the three decorator forms, what a view may return, how a login form redirects, and <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a> for when you want the wheel yourself.</li>
+<li><a href="../user-guide/templates.html">Writing Templates</a>: Chameleon syntax for people arriving from Jinja, shared layouts with METAL, and the folder layout the name inference expects.</li>
+<li><a href="../user-guide/error-pages.html">Friendly Error Pages</a>: the book that sold yesterday, and how to say so in HTML instead of JSON.</li>
+<li><a href="../user-guide/troubleshooting.html">Troubleshooting</a>: every error the package or Chameleon can raise, what it is really telling you, and the fix.</li>
+<li><a href="../user-guide/testing.html">Testing and CI</a>: views are plain callables, so tests need no server and no port.</li>
+<li><a href="../user-guide/configuration.html">Configuration</a>: every <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> option, verified by running it.</li>
+<li><a href="../user-guide/how-it-works.html">How It Works</a>: what happens at import time, what happens per request, and why error pages are exceptions.</li>
 <li><a href="../user-guide/faq.html">FAQ</a>.</li>
 </ul>
 

@@ -121,15 +121,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="error-pages.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/error-pages.html">
-  <meta name="description" content="FastAPI answers a missing resource with a JSON body, {&quot;detail&quot;: &quot;Not Found&quot;}. For an HTML site you want a real page instead. fastapi-chameleon gives...">
+  <meta name="description" content="Somewhere out there is a customer with a bookmark to a Shelf Life book that sold last Tuesday. When they click it, FastAPI’s instinct is to answer...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Friendly Error Pages – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="FastAPI answers a missing resource with a JSON body, {&amp;quot;detail&amp;quot;: &amp;quot;Not Found&amp;quot;}. For an HTML site you want a real page instead. fastapi-chameleon gives...">
+  <meta property="og:description" content="Somewhere out there is a customer with a bookmark to a Shelf Life book that sold last Tuesday. When they click it, FastAPI’s instinct is to answer...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/error-pages.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Friendly Error Pages – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="FastAPI answers a missing resource with a JSON body, {&amp;quot;detail&amp;quot;: &amp;quot;Not Found&amp;quot;}. For an HTML site you want a real page instead. fastapi-chameleon gives...">
+  <meta name="twitter:description" content="Somewhere out there is a customer with a bookmark to a Shelf Life book that sold last Tuesday. When they click it, FastAPI’s instinct is to answer...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -309,7 +309,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>FastAPI answers a missing resource with a JSON body, <code>{"detail": "Not Found"}</code>. For an HTML site you want a real page instead. fastapi-chameleon gives you two functions for that: <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> for the common 404, and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> for any other status code.</p>
+<p>Somewhere out there is a customer with a bookmark to a Shelf Life book that sold last Tuesday. When they click it, FastAPI’s instinct is to answer <code>{"detail": "Not Found"}</code>. Accurate, and about as welcoming as a locked door with a sticky note on it.</p>
+<p>A website should say sorry in HTML. It should keep the header and the search box, suggest a few similar books, and look like the rest of the site. fastapi-chameleon gives you two functions for that: <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> for the everyday 404, and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> for every other status code you might need.</p>
 <section id="a-friendly-404" class="level1">
 <h1>A friendly 404</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.get</span>(<span class="st">'/catalog/item/</span><span class="sc">{item_id}</span><span class="st">'</span>)</span>
@@ -320,12 +321,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        fastapi_chameleon.not_found()</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> item.model_dump()</span></code></pre></div>
-<p>This renders <code>templates/errors/404.pt</code> with status <code>404</code>. To use a different template:</p>
+<p>Read that again and notice what is missing. There is no <code>return</code> in front of <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a>, and there is no <code>else</code>. The call does not come back. It renders <code>templates/errors/404.pt</code> with status <code>404</code> and the rest of the function never runs.</p>
+<p>To use a different template:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>fastapi_chameleon.not_found(four04template_file<span class="op">=</span><span class="st">'errors/custom_404.pt'</span>)</span></code></pre></div>
-<p>The 404 template is rendered with an empty model, so it cannot show request-specific data. Keep it static, or use <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> when you need to pass variables.</p>
+<p>The 404 template is rendered with an empty model, so it cannot show request-specific data such as the title that was searched for. Keep it static, or reach for <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> when the page needs variables.</p>
 </section>
 <section id="any-status-code-with-generic_error" class="level1">
 <h1>Any status code with <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a></h1>
+<p>Not every refusal is a 404. A book held for staff review should produce a 403, and the page should be able to say why:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.get</span>(<span class="st">'/catalog/item/</span><span class="sc">{item_id}</span><span class="st">'</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>(<span class="st">'catalog/item.pt'</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> item(item_id: <span class="bu">int</span>):</span>
@@ -339,8 +342,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="how-they-work-and-where-they-work" class="level1">
 <h1>How they work, and where they work</h1>
-<p>Both functions always raise. <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> raises <a href="../reference/exceptions.FastAPIChameleonNotFoundException.html#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException" class="gdls-link gdls-code">FastAPIChameleonNotFoundException</a> and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> raises <a href="../reference/exceptions.FastAPIChameleonGenericException.html#fastapi_chameleon.exceptions.FastAPIChameleonGenericException" class="gdls-link gdls-code">FastAPIChameleonGenericException</a>. The <code>@template</code> decorator catches those two exceptions and renders the error template with the right status. Because the decorator does the catching, you can call either function anywhere below a decorated view: in a service, a repository, or a helper. Execution stops at the call, so code after it never runs.</p>
-<p>The flip side is that the call must happen below a decorated view. If you call <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> from an undecorated route, from middleware, or from a FastAPI dependency, nothing catches the exception and FastAPI returns a plain <code>500 Internal Server Error</code>. Either decorate that route, or raise <code>fastapi.HTTPException</code> there instead.</p>
+<p>Both functions are emergency exits. They always raise. <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> raises <a href="../reference/exceptions.FastAPIChameleonNotFoundException.html#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException" class="gdls-link gdls-code">FastAPIChameleonNotFoundException</a> and <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> raises <a href="../reference/exceptions.FastAPIChameleonGenericException.html#fastapi_chameleon.exceptions.FastAPIChameleonGenericException" class="gdls-link gdls-code">FastAPIChameleonGenericException</a>. The <code>@template</code> decorator, sitting at the top of the call, catches those two exceptions and renders the error template with the right status.</p>
+<p>Because the decorator does the catching, the exit can be pulled from anywhere below a decorated view. Shelf Life’s <code>service.get_item_by_id()</code> could call <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> itself, three layers down from the route, and the customer would still get the page. No status codes threaded back up through return values, no <code>Optional</code> sprinkled across every layer. Execution stops at the call, and the decorator takes it from there.</p>
+<p>The flip side follows directly. The exit only works if there is a decorated view above it to catch the exception. Call <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> from an undecorated route, from middleware, or from a FastAPI dependency and nothing is listening. FastAPI sees an unhandled exception and returns a bare <code>500 Internal Server Error</code>. In those places, decorate the route or raise <code>fastapi.HTTPException</code> instead.</p>
 </section>
 <section id="what-the-error-response-looks-like" class="level1">
 <h1>What the error response looks like</h1>
@@ -375,8 +379,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>The decorator’s <code>mimetype</code> argument does not apply to error pages. A view decorated with <code>mimetype='application/xml'</code> still returns its 404 as <code>text/html</code>.</p>
-<p>If the error template itself is missing, Chameleon raises <code>ValueError</code> while rendering it, and the client sees a <code>500</code>. Create <code>templates/errors/404.pt</code> before you first call <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a>.</p>
+<p>The decorator’s <code>mimetype</code> does not apply to error pages. A view decorated with <code>mimetype='application/xml'</code> still delivers its 404 as <code>text/html</code>, because the person reading it is in a browser.</p>
+<p>One last thing to set up before the first <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> call: create <code>templates/errors/404.pt</code>. If the error template itself is missing, Chameleon raises <code>ValueError</code> while trying to render it and the client sees a <code>500</code>. An error page that errors is a small tragedy, and an avoidable one.</p>
 </section>
 <section id="reference" class="level1">
 <h1>Reference</h1>

@@ -2,7 +2,9 @@
 title: "Friendly Error Pages"
 ---
 
-FastAPI answers a missing resource with a JSON body, `{"detail": "Not Found"}`. For an HTML site you want a real page instead. fastapi-chameleon gives you two functions for that: `not_found()` for the common 404, and `generic_error()` for any other status code.
+Somewhere out there is a customer with a bookmark to a Shelf Life book that sold last Tuesday. When they click it, FastAPI's instinct is to answer `{"detail": "Not Found"}`. Accurate, and about as welcoming as a locked door with a sticky note on it.
+
+A website should say sorry in HTML. It should keep the header and the search box, suggest a few similar books, and look like the rest of the site. fastapi-chameleon gives you two functions for that: `not_found()` for the everyday 404, and `generic_error()` for every other status code you might need.
 
 ## A friendly 404
 
@@ -17,15 +19,19 @@ async def item(item_id: int):
     return item.model_dump()
 ```
 
-This renders `templates/errors/404.pt` with status `404`. To use a different template:
+Read that again and notice what is missing. There is no `return` in front of `not_found()`, and there is no `else`. The call does not come back. It renders `templates/errors/404.pt` with status `404` and the rest of the function never runs.
+
+To use a different template:
 
 ```python
 fastapi_chameleon.not_found(four04template_file='errors/custom_404.pt')
 ```
 
-The 404 template is rendered with an empty model, so it cannot show request-specific data. Keep it static, or use `generic_error()` when you need to pass variables.
+The 404 template is rendered with an empty model, so it cannot show request-specific data such as the title that was searched for. Keep it static, or reach for `generic_error()` when the page needs variables.
 
 ## Any status code with `generic_error()`
+
+Not every refusal is a 404. A book held for staff review should produce a 403, and the page should be able to say why:
 
 ```python
 @router.get('/catalog/item/{item_id}')
@@ -46,9 +52,11 @@ fastapi_chameleon.generic_error('errors/500.pt', 500, template_data={'detail': '
 
 ## How they work, and where they work
 
-Both functions always raise. `not_found()` raises `FastAPIChameleonNotFoundException` and `generic_error()` raises `FastAPIChameleonGenericException`. The `@template` decorator catches those two exceptions and renders the error template with the right status. Because the decorator does the catching, you can call either function anywhere below a decorated view: in a service, a repository, or a helper. Execution stops at the call, so code after it never runs.
+Both functions are emergency exits. They always raise. `not_found()` raises `FastAPIChameleonNotFoundException` and `generic_error()` raises `FastAPIChameleonGenericException`. The `@template` decorator, sitting at the top of the call, catches those two exceptions and renders the error template with the right status.
 
-The flip side is that the call must happen below a decorated view. If you call `not_found()` from an undecorated route, from middleware, or from a FastAPI dependency, nothing catches the exception and FastAPI returns a plain `500 Internal Server Error`. Either decorate that route, or raise `fastapi.HTTPException` there instead.
+Because the decorator does the catching, the exit can be pulled from anywhere below a decorated view. Shelf Life's `service.get_item_by_id()` could call `not_found()` itself, three layers down from the route, and the customer would still get the page. No status codes threaded back up through return values, no `Optional` sprinkled across every layer. Execution stops at the call, and the decorator takes it from there.
+
+The flip side follows directly. The exit only works if there is a decorated view above it to catch the exception. Call `not_found()` from an undecorated route, from middleware, or from a FastAPI dependency and nothing is listening. FastAPI sees an unhandled exception and returns a bare `500 Internal Server Error`. In those places, decorate the route or raise `fastapi.HTTPException` instead.
 
 ## What the error response looks like
 
@@ -59,9 +67,9 @@ The flip side is that the call must happen below a decorated view. If you call `
 | Model | empty | `template_data`, or empty if omitted |
 | Content type | `text/html` | `text/html` |
 
-The decorator's `mimetype` argument does not apply to error pages. A view decorated with `mimetype='application/xml'` still returns its 404 as `text/html`.
+The decorator's `mimetype` does not apply to error pages. A view decorated with `mimetype='application/xml'` still delivers its 404 as `text/html`, because the person reading it is in a browser.
 
-If the error template itself is missing, Chameleon raises `ValueError` while rendering it, and the client sees a `500`. Create `templates/errors/404.pt` before you first call `not_found()`.
+One last thing to set up before the first `not_found()` call: create `templates/errors/404.pt`. If the error template itself is missing, Chameleon raises `ValueError` while trying to render it and the client sees a `500`. An error page that errors is a small tragedy, and an avoidable one.
 
 ## Reference
 

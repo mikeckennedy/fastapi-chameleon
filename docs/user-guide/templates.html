@@ -121,15 +121,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="templates.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/templates.html">
-  <meta name="description" content="Chameleon templates are HTML files with a small attribute language on top. If you have used Zope Page Templates or Pyramid, it is the same TAL and...">
+  <meta name="description" content="Chameleon templates are HTML files that happen to be alive. Open one in a browser and it renders as a static mockup. Hand it to the engine with some...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Writing Templates – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="Chameleon templates are HTML files with a small attribute language on top. If you have used Zope Page Templates or Pyramid, it is the same TAL and...">
+  <meta property="og:description" content="Chameleon templates are HTML files that happen to be alive. Open one in a browser and it renders as a static mockup. Hand it to the engine with some...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/templates.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Writing Templates – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="Chameleon templates are HTML files with a small attribute language on top. If you have used Zope Page Templates or Pyramid, it is the same TAL and...">
+  <meta name="twitter:description" content="Chameleon templates are HTML files that happen to be alive. Open one in a browser and it renders as a static mockup. Hand it to the engine with some...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -310,17 +310,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Chameleon templates are HTML files with a small attribute language on top. If you have used Zope Page Templates or Pyramid, it is the same TAL and METAL. If you are coming from Jinja or Django, the first thing to unlearn is <code>{% %}</code> and <code>{ }</code>: Chameleon has neither. Interpolation is <code>${expr}</code> and control flow lives in <code>tal:</code> attributes on ordinary elements.</p>
+<p>Chameleon templates are HTML files that happen to be alive. Open one in a browser and it renders as a static mockup. Hand it to the engine with some data and the same file becomes the page. That trick is possible because Chameleon’s logic lives in attributes on ordinary elements, not in tags of its own.</p>
+<p>If you have used Zope Page Templates or Pyramid, this is the TAL and METAL you already know. If you are arriving from Jinja or Django, the first thing to unlearn is <code>{% %}</code> and <code>{ }</code>. Chameleon has neither. Interpolation is <code>${expr}</code>, and loops and conditions are <code>tal:</code> attributes. After about an hour the syntax stops feeling foreign and starts feeling like your HTML got a promotion.</p>
 <section id="interpolation-and-expressions" class="level1">
 <h1>Interpolation and expressions</h1>
-<p>Anything inside <code>${ }</code> is a Python expression evaluated against the dict your view returned:</p>
+<p>Anything inside <code>${ }</code> is a Python expression, evaluated against the dict your view returned:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Hello, ${user.name.title()}!<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">p</span><span class="dt">&gt;</span>You have ${len(items)} item(s).<span class="dt">&lt;/</span><span class="kw">p</span><span class="dt">&gt;</span></span></code></pre></div>
-<p>Output is HTML-escaped by default. To insert markup you already trust, use the <code>structure:</code> prefix:</p>
+<p>Real Python, not a template dialect. Method calls, slicing, conditional expressions, <code>len()</code>, all of it.</p>
+<p>Output is HTML-escaped by default, so a book title containing <code>&lt;script&gt;</code> is displayed, not executed. When you have markup you already trust, say a rendered Markdown description, use the <code>structure:</code> prefix to insert it unescaped:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">div</span><span class="ot"> tal:content</span><span class="op">=</span><span class="st">"structure: raw_html"</span><span class="dt">&gt;&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
 </section>
 <section id="tal-attributes" class="level1">
 <h1>TAL attributes</h1>
+<p>Here is the catalog page for Shelf Life, built from the handful of attributes that do most of the work:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Loop. The repeat variable exposes index, number, even, odd, first, last. --&gt;</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">li</span><span class="ot"> tal:repeat</span><span class="op">=</span><span class="st">"item items"</span><span class="ot"> tal:attributes</span><span class="op">=</span><span class="st">"class 'odd' if repeat.item.odd else 'even'"</span><span class="dt">&gt;</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  ${repeat.item.number}. ${item.name}</span>
@@ -339,11 +342,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- Define a local variable. --&gt;</span></span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">span</span><span class="ot"> tal:define</span><span class="op">=</span><span class="st">"total sum(i.price for i in items)"</span><span class="dt">&gt;</span>Total: ${total}<span class="dt">&lt;/</span><span class="kw">span</span><span class="dt">&gt;</span></span></code></pre></div>
-<p>The full language is documented in the <a href="https://chameleon.readthedocs.io/en/latest/reference.html">Chameleon reference</a>.</p>
+<p>Notice the placeholder text inside <code>tal:content</code> and <code>tal:replace</code>. It is what a designer sees when they open the file directly, and it vanishes when the engine renders the real value. Templates that double as their own mockups are one of Chameleon’s quiet pleasures.</p>
+<p>The full language is in the <a href="https://chameleon.readthedocs.io/en/latest/reference.html">Chameleon reference</a>.</p>
 </section>
 <section id="shared-layouts-with-metal" class="level1">
 <h1>Shared layouts with METAL</h1>
-<p>METAL macros are how Chameleon does what Jinja calls template inheritance. The layout defines a macro with slots, and each page fills the slots.</p>
+<p>Every page in the shop shares a header, a footer, and a stylesheet link. METAL macros are how Chameleon does what Jinja calls template inheritance: the layout defines a macro with named slots, and each page fills them in.</p>
 <p><strong><code>templates/shared/layout.pt</code></strong></p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">html</span><span class="ot"> metal:define-macro</span><span class="op">=</span><span class="st">"layout"</span><span class="dt">&gt;</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;</span><span class="kw">head</span><span class="dt">&gt;&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>${title}<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;&lt;/</span><span class="kw">head</span><span class="dt">&gt;</span></span>
@@ -357,11 +361,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>${title}<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;/</span><span class="kw">div</span><span class="dt">&gt;</span></span></code></pre></div>
-<p>The <code>load:</code> expression resolves the layout relative to the current template file. The variables the view returned, <code>title</code> here, are visible inside the layout too.</p>
+<p>The <code>load:</code> expression resolves the layout relative to the current template file. The variables the view returned, <code>title</code> here, are visible inside the layout as well as the page, so the layout can set the browser tab title without any extra plumbing.</p>
 </section>
 <section id="project-layout" class="level1">
 <h1>Project layout</h1>
-<p>A layout that works well, and that the template name inference expects:</p>
+<p>A folder structure that works well, and that the template name inference expects:</p>
 <pre class="text"><code>my_app/
 ├── main.py                # global_init() here, before views are imported
 ├── views/
@@ -374,15 +378,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 │   └── shared/
 │       └── layout.pt      # METAL macros
 └── static/</code></pre>
-<p>Both <code>.pt</code> and <code>.html</code> extensions work. Chameleon treats them the same. The inference prefers <code>.html</code> and falls back to <code>.pt</code>, so pick one convention per project and stick to it. Explicit template names can use either.</p>
+<p>Both <code>.pt</code> and <code>.html</code> extensions work and Chameleon treats them identically. <code>.pt</code> announces “this is a page template” to anyone browsing the repo. <code>.html</code> gets syntax highlighting everywhere without configuration. The inference prefers <code>.html</code> and falls back to <code>.pt</code>, so pick one convention per project and stay with it. Explicit template names can use either.</p>
 </section>
 <section id="editing-templates-while-the-server-runs" class="level1">
 <h1>Editing templates while the server runs</h1>
-<p>Chameleon compiles each template once and caches it. Pass <code>auto_reload=True</code> to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> during development so edits are picked up on the next request without restarting. Leave it off in production. See <a href="../user-guide/configuration.html">Configuration</a>.</p>
+<p>Chameleon compiles each template to Python once and keeps the compiled version. That is fast, and it is also why your first edit to a template appears to do nothing. Pass <code>auto_reload=True</code> to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> during development and edits are picked up on the next request without a restart. Leave it off in production. See <a href="../user-guide/configuration.html">Configuration</a>.</p>
 </section>
 <section id="a-note-on-undefined-variables" class="level1">
 <h1>A note on undefined variables</h1>
-<p>Referencing a variable the view did not return raises <code>NameError</code> from Chameleon at render time, naming the missing variable. FastAPI turns that into a <code>500</code>. See <a href="../user-guide/troubleshooting.html">Troubleshooting</a> for the full list of errors you may hit.</p>
+<p>Reference a variable the view did not return and Chameleon raises <code>NameError</code> at render time, naming the missing variable. FastAPI turns that into a <code>500</code>. It is the most common template error there is, and <a href="../user-guide/troubleshooting.html">Troubleshooting</a> has the full catalogue of what can go wrong and what each message means.</p>
 
 
 </section>

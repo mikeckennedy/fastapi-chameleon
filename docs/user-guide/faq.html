@@ -85,15 +85,15 @@ ul.task-list li input[type="checkbox"] {
 
   <link rel="alternate" type="text/markdown" href="faq.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/faq.html">
-  <meta name="description" content="Not with this package. Use fastapi-jinja, which has the same shape: one global_init(), one @template decorator, views return dicts.">
+  <meta name="description" content="The questions that come up once the shop is open and real customers are clicking things.">
   <meta property="og:type" content="website">
   <meta property="og:title" content="FAQ – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="Not with this package. Use fastapi-jinja, which has the same shape: one global_init(), one @template decorator, views return dicts.">
+  <meta property="og:description" content="The questions that come up once the shop is open and real customers are clicking things.">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/faq.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="FAQ – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="Not with this package. Use fastapi-jinja, which has the same shape: one global_init(), one @template decorator, views return dicts.">
+  <meta name="twitter:description" content="The questions that come up once the shop is open and real customers are clicking things.">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -251,7 +251,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#can-i-have-more-than-one-template-folder" id="toc-can-i-have-more-than-one-template-folder" class="nav-link" data-scroll-target="#can-i-have-more-than-one-template-folder">Can I have more than one template folder?</a></li>
   <li><a href="#why-does-my-404-page-come-back-as-json-or-as-a-500" id="toc-why-does-my-404-page-come-back-as-json-or-as-a-500" class="nav-link" data-scroll-target="#why-does-my-404-page-come-back-as-json-or-as-a-500">Why does my 404 page come back as JSON, or as a 500?</a></li>
   <li><a href="#why-are-my-template-edits-not-showing-up" id="toc-why-are-my-template-edits-not-showing-up" class="nav-link" data-scroll-target="#why-are-my-template-edits-not-showing-up">Why are my template edits not showing up?</a></li>
-  <li><a href="#can-i-use-the-template-name-inference" id="toc-can-i-use-the-template-name-inference" class="nav-link" data-scroll-target="#can-i-use-the-template-name-inference">Can I use the template name inference?</a></li>
+  <li><a href="#should-i-use-the-template-name-inference" id="toc-should-i-use-the-template-name-inference" class="nav-link" data-scroll-target="#should-i-use-the-template-name-inference">Should I use the template name inference?</a></li>
   <li><a href="#what-python-versions-are-supported" id="toc-what-python-versions-are-supported" class="nav-link" data-scroll-target="#what-python-versions-are-supported">What Python versions are supported?</a></li>
   <li><a href="#where-is-the-full-list-of-errors" id="toc-where-is-the-full-list-of-errors" class="nav-link" data-scroll-target="#where-is-the-full-list-of-errors">Where is the full list of errors?</a></li>
   </ul>
@@ -279,9 +279,10 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<p>The questions that come up once the shop is open and real customers are clicking things.</p>
 <section id="can-i-use-jinja-instead-of-chameleon" class="level1">
 <h1>Can I use Jinja instead of Chameleon?</h1>
-<p>Not with this package. Use <a href="https://github.com/AGeekInside/fastapi-jinja">fastapi-jinja</a>, which has the same shape: one <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>, one <code>@template</code> decorator, views return dicts.</p>
+<p>Not with this package, but you do not have to choose blind. <a href="https://github.com/AGeekInside/fastapi-jinja">fastapi-jinja</a> is the sister project with the same shape: one <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>, one <code>@template</code> decorator, views that return dicts. Swapping between them is mostly a matter of which attribute syntax you prefer.</p>
 </section>
 <section id="does-it-work-with-apirouter" class="level1">
 <h1>Does it work with <code>APIRouter</code>?</h1>
@@ -289,15 +290,15 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="do-async-views-work" class="level1">
 <h1>Do async views work?</h1>
-<p>Yes. The decorator detects a coroutine function at decoration time and awaits it. Nothing else changes.</p>
+<p>Yes. The decorator detects a coroutine function at decoration time and awaits it. Nothing else changes, and sync and async views can live side by side in the same router.</p>
 </section>
 <section id="can-i-return-a-pydantic-model-from-a-view" class="level1">
 <h1>Can I return a Pydantic model from a view?</h1>
-<p>No.&nbsp;Return <code>model.model_dump()</code>. Only a <code>dict</code> or a <code>fastapi.Response</code> is accepted, and anything else raises <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a>.</p>
+<p>No.&nbsp;Return <code>model.model_dump()</code>. Only a <code>dict</code> or a <code>fastapi.Response</code> is accepted, and anything else raises <a href="../reference/exceptions.FastAPIChameleonException.html#fastapi_chameleon.exceptions.FastAPIChameleonException" class="gdls-link gdls-code">FastAPIChameleonException</a> with a message naming the type it got instead.</p>
 </section>
 <section id="how-do-i-pass-the-request-to-the-template" class="level1">
 <h1>How do I pass the request to the template?</h1>
-<p>Put it in the dict: <code>return {'request': request, 'title': 'Home'}</code>. The template can then read <code>${request.url.path}</code> or anything else on it.</p>
+<p>Put it in the dict: <code>return {'request': request, 'title': 'Home'}</code>. The template can then read <code>${request.url.path}</code> or anything else on it. There is no magic request variable, which also means there is nothing to forget to configure.</p>
 </section>
 <section id="can-i-have-more-than-one-template-folder" class="level1">
 <h1>Can I have more than one template folder?</h1>
@@ -305,15 +306,15 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="why-does-my-404-page-come-back-as-json-or-as-a-500" class="level1">
 <h1>Why does my 404 page come back as JSON, or as a 500?</h1>
-<p>Because <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> was called from code that is not below a <code>@template</code>-decorated view. The decorator is what turns the exception into a page. Decorate the route, or raise <code>fastapi.HTTPException(404)</code> from undecorated code. See <a href="../user-guide/error-pages.html">Friendly Error Pages</a>.</p>
+<p>Because <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> was called from code that is not below a <code>@template</code>-decorated view. The decorator is the thing that turns the exception into a page, and without it the exception is just an exception. Decorate the route, or raise <code>fastapi.HTTPException(404)</code> from undecorated code. See <a href="../user-guide/error-pages.html">Friendly Error Pages</a>.</p>
 </section>
 <section id="why-are-my-template-edits-not-showing-up" class="level1">
 <h1>Why are my template edits not showing up?</h1>
 <p><code>auto_reload</code> is <code>False</code> by default and templates are compiled once. Pass <code>auto_reload=True</code> to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> while developing. Note that a second <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> call does not change the setting unless you pass <code>cache_init=False</code>. See <a href="../user-guide/configuration.html">Configuration</a>.</p>
 </section>
-<section id="can-i-use-the-template-name-inference" class="level1">
-<h1>Can I use the template name inference?</h1>
-<p>Yes, but call <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> before importing your view modules, and keep your template folder organised as <code>{module}/{function}.pt</code>. See <a href="../user-guide/views.html">Decorating Views</a>. If you want fewer surprises, name templates explicitly.</p>
+<section id="should-i-use-the-template-name-inference" class="level1">
+<h1>Should I use the template name inference?</h1>
+<p>If your project is laid out as <code>{module}/{function}.pt</code> and <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> runs before your view modules are imported, inference is tidy and saves a string per view. If you would rather read the path than remember the rule, name templates explicitly. Both are fully supported. See <a href="../user-guide/views.html">Decorating Views</a>.</p>
 </section>
 <section id="what-python-versions-are-supported" class="level1">
 <h1>What Python versions are supported?</h1>
@@ -321,7 +322,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="where-is-the-full-list-of-errors" class="level1">
 <h1>Where is the full list of errors?</h1>
-<p><a href="../user-guide/troubleshooting.html">Troubleshooting</a> lists every exception the package raises, what it means, and how to fix it.</p>
+<p><a href="../user-guide/troubleshooting.html">Troubleshooting</a> lists every exception the package or Chameleon raises, what it means, and how to fix it, in the order you should check things.</p>
 
 
 </section>

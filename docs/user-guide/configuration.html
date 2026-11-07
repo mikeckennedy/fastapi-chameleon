@@ -121,15 +121,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="configuration.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/configuration.html">
-  <meta name="description" content="All configuration happens through global_init(). There are no environment variables, no settings file, and no command-line interface.">
+  <meta name="description" content="There is pleasingly little to configure. One function, three parameters, and no environment variables, settings files, or command-line flags hiding...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Configuration – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="All configuration happens through global_init(). There are no environment variables, no settings file, and no command-line interface.">
+  <meta property="og:description" content="There is pleasingly little to configure. One function, three parameters, and no environment variables, settings files, or command-line flags hiding...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/configuration.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Configuration – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="All configuration happens through global_init(). There are no environment variables, no settings file, and no command-line interface.">
+  <meta name="twitter:description" content="There is pleasingly little to configure. One function, three parameters, and no environment variables, settings files, or command-line flags hiding...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -309,7 +309,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>All configuration happens through <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>. There are no environment variables, no settings file, and no command-line interface.</p>
+<p>There is pleasingly little to configure. One function, three parameters, and no environment variables, settings files, or command-line flags hiding behind them. Everything the engine knows, it learned from a single <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> call at startup.</p>
 <section id="global_init-parameters" class="level1">
 <h1><a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> parameters</h1>
 <table class="caption-top table">
@@ -342,10 +342,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>Each row was checked against the code and by running it. The <code>auto_reload</code> flag is passed straight to Chameleon’s <code>PageTemplateLoader</code>.</p>
+<p>Every row in that table was checked against the source and then by running it. The <code>auto_reload</code> flag is handed straight to Chameleon’s <code>PageTemplateLoader</code>, so its behaviour is Chameleon’s behaviour.</p>
 </section>
 <section id="calling-global_init-more-than-once" class="level1">
 <h1>Calling <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> more than once</h1>
+<p>This is the one place people get tripped up, because the default is to politely ignore you.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -368,7 +369,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>A consequence worth knowing: you cannot change <code>auto_reload</code> by calling <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> again with the default <code>cache_init</code>. Pass <code>cache_init=False</code> or call <code>fastapi_chameleon.engine.clear()</code> first.</p>
+<p>The consequence: you cannot flip <code>auto_reload</code> by calling <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> a second time with the defaults. The engine will keep whatever it was told first. Pass <code>cache_init=False</code>, or call <code>fastapi_chameleon.engine.clear()</code> and start over. This design is deliberate. It means a library or a plugin that calls <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> defensively cannot stomp on the app’s own configuration.</p>
 </section>
 <section id="development-versus-production" class="level1">
 <h1>Development versus production</h1>
@@ -381,7 +382,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>BASE_DIR <span class="op">=</span> Path(<span class="va">__file__</span>).resolve().parent</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>fastapi_chameleon.global_init(BASE_DIR <span class="op">/</span> <span class="st">'templates'</span>, auto_reload<span class="op">=</span>dev_mode)</span></code></pre></div>
-<p>With <code>auto_reload=False</code>, Chameleon compiles each template to Python the first time it is used and reuses the compiled version for the life of the process. That is the setting you want under load. With <code>auto_reload=True</code>, every use checks the file’s modification time, which is cheap but not free.</p>
+<p>With <code>auto_reload=False</code>, Chameleon compiles each template to Python the first time it is used and reuses that compiled version for the life of the process. Rendering a page becomes a function call, which is why Chameleon has a reputation for speed. That is the setting you want under load. With <code>auto_reload=True</code>, every use checks the file’s modification time first. Cheap, but not free, and pointless on a server where nobody is editing templates.</p>
 </section>
 <section id="the-decorator" class="level1">
 <h1>The decorator</h1>
@@ -407,11 +408,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>There is no <code>status_code</code> parameter on the decorator. A rendered dict is always a <code>200</code>. Use <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a> for another status, or <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> for error pages.</p>
+<p>There is no <code>status_code</code> parameter on the decorator, and that is on purpose. A rendered dict is always a <code>200</code>. For another status use <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a>, and for error pages use <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a>, each of which makes the status visible at the call site instead of hiding it in a decorator argument.</p>
 </section>
 <section id="where-global_init-goes" class="level1">
 <h1>Where <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> goes</h1>
-<p>Call it at import time in the module that creates the app, before the view modules are imported. If views are registered in a separate module, the order looks like this:</p>
+<p>Call it at import time in the module that creates the app, before the view modules are imported. When views live in their own module, the order looks like this:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># main.py</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fastapi</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fastapi_chameleon</span>
@@ -422,7 +423,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> views <span class="im">import</span> home  <span class="co"># noqa: E402  imported after init on purpose</span></span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>app.include_router(home.router)</span></code></pre></div>
-<p>The order matters only for views that let the decorator infer the template name. Views with explicit template names resolve them at request time against whatever folder is configured then.</p>
+<p>The order matters only for views that let the decorator infer the template name. Views with explicit template names resolve them at request time against whatever folder is configured then, so they are indifferent to import order.</p>
 
 
 </section>

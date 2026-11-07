@@ -1,18 +1,22 @@
 # Writing Templates
 
-Chameleon templates are HTML files with a small attribute language on top. If you have used Zope Page Templates or Pyramid, it is the same TAL and METAL. If you are coming from Jinja or Django, the first thing to unlearn is `{% %}` and `{ }`: Chameleon has neither. Interpolation is `${expr}` and control flow lives in `tal:` attributes on ordinary elements.
+Chameleon templates are HTML files that happen to be alive. Open one in a browser and it renders as a static mockup. Hand it to the engine with some data and the same file becomes the page. That trick is possible because Chameleon's logic lives in attributes on ordinary elements, not in tags of its own.
+
+If you have used Zope Page Templates or Pyramid, this is the TAL and METAL you already know. If you are arriving from Jinja or Django, the first thing to unlearn is `{% %}` and `{ }`. Chameleon has neither. Interpolation is `${expr}`, and loops and conditions are `tal:` attributes. After about an hour the syntax stops feeling foreign and starts feeling like your HTML got a promotion.
 
 
 # Interpolation and expressions
 
-Anything inside `${ }` is a Python expression evaluated against the dict your view returned:
+Anything inside `${ }` is a Python expression, evaluated against the dict your view returned:
 
 ``` html
 <h1>Hello, ${user.name.title()}!</h1>
 <p>You have ${len(items)} item(s).</p>
 ```
 
-Output is HTML-escaped by default. To insert markup you already trust, use the `structure:` prefix:
+Real Python, not a template dialect. Method calls, slicing, conditional expressions, `len()`, all of it.
+
+Output is HTML-escaped by default, so a book title containing `<script>` is displayed, not executed. When you have markup you already trust, say a rendered Markdown description, use the `structure:` prefix to insert it unescaped:
 
 ``` html
 <div tal:content="structure: raw_html"></div>
@@ -20,6 +24,8 @@ Output is HTML-escaped by default. To insert markup you already trust, use the `
 
 
 # TAL attributes
+
+Here is the catalog page for Shelf Life, built from the handful of attributes that do most of the work:
 
 ``` html
 <!-- Loop. The repeat variable exposes index, number, even, odd, first, last. -->
@@ -42,12 +48,14 @@ Output is HTML-escaped by default. To insert markup you already trust, use the `
 <span tal:define="total sum(i.price for i in items)">Total: ${total}</span>
 ```
 
-The full language is documented in the [Chameleon reference](https://chameleon.readthedocs.io/en/latest/reference.html).
+Notice the placeholder text inside `tal:content` and `tal:replace`. It is what a designer sees when they open the file directly, and it vanishes when the engine renders the real value. Templates that double as their own mockups are one of Chameleon's quiet pleasures.
+
+The full language is in the [Chameleon reference](https://chameleon.readthedocs.io/en/latest/reference.html).
 
 
 # Shared layouts with METAL
 
-METAL macros are how Chameleon does what Jinja calls template inheritance. The layout defines a macro with slots, and each page fills the slots.
+Every page in the shop shares a header, a footer, and a stylesheet link. METAL macros are how Chameleon does what Jinja calls template inheritance: the layout defines a macro with named slots, and each page fills them in.
 
 **`templates/shared/layout.pt`**
 
@@ -70,12 +78,12 @@ METAL macros are how Chameleon does what Jinja calls template inheritance. The l
 
 ```
 
-The `load:` expression resolves the layout relative to the current template file. The variables the view returned, `title` here, are visible inside the layout too.
+The `load:` expression resolves the layout relative to the current template file. The variables the view returned, `title` here, are visible inside the layout as well as the page, so the layout can set the browser tab title without any extra plumbing.
 
 
 # Project layout
 
-A layout that works well, and that the template name inference expects:
+A folder structure that works well, and that the template name inference expects:
 
 ``` text
 my_app/
@@ -92,14 +100,14 @@ my_app/
 └── static/
 ```
 
-Both `.pt` and `.html` extensions work. Chameleon treats them the same. The inference prefers `.html` and falls back to `.pt`, so pick one convention per project and stick to it. Explicit template names can use either.
+Both `.pt` and `.html` extensions work and Chameleon treats them identically. `.pt` announces "this is a page template" to anyone browsing the repo. `.html` gets syntax highlighting everywhere without configuration. The inference prefers `.html` and falls back to `.pt`, so pick one convention per project and stay with it. Explicit template names can use either.
 
 
 # Editing templates while the server runs
 
-Chameleon compiles each template once and caches it. Pass `auto_reload=True` to [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) during development so edits are picked up on the next request without restarting. Leave it off in production. See [Configuration](configuration.md).
+Chameleon compiles each template to Python once and keeps the compiled version. That is fast, and it is also why your first edit to a template appears to do nothing. Pass `auto_reload=True` to [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) during development and edits are picked up on the next request without a restart. Leave it off in production. See [Configuration](configuration.md).
 
 
 # A note on undefined variables
 
-Referencing a variable the view did not return raises `NameError` from Chameleon at render time, naming the missing variable. FastAPI turns that into a `500`. See [Troubleshooting](troubleshooting.md) for the full list of errors you may hit.
+Reference a variable the view did not return and Chameleon raises `NameError` at render time, naming the missing variable. FastAPI turns that into a `500`. It is the most common template error there is, and [Troubleshooting](troubleshooting.md) has the full catalogue of what can go wrong and what each message means.

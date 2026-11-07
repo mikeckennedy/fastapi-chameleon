@@ -121,15 +121,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
   <link rel="alternate" type="text/markdown" href="views.md">
   <link rel="canonical" href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/views.html">
-  <meta name="description" content="A view is any FastAPI path operation, sync or async. Decorate it with @fastapi_chameleon.template(...) and return a dict. The decorator renders the...">
+  <meta name="description" content="A view in this package has one job: decide what to show. It looks at the request, talks to whatever data it needs, and returns a dict. It never touches...">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Decorating Views – FastAPI Chameleon | FastAPI Chameleon">
-  <meta property="og:description" content="A view is any FastAPI path operation, sync or async. Decorate it with @fastapi_chameleon.template(...) and return a dict. The decorator renders the...">
+  <meta property="og:description" content="A view in this package has one job: decide what to show. It looks at the request, talks to whatever data it needs, and returns a dict. It never touches...">
   <meta property="og:url" content="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/views.html">
   <meta property="og:site_name" content="FastAPI Chameleon">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Decorating Views – FastAPI Chameleon | FastAPI Chameleon">
-  <meta name="twitter:description" content="A view is any FastAPI path operation, sync or async. Decorate it with @fastapi_chameleon.template(...) and return a dict. The decorator renders the...">
+  <meta name="twitter:description" content="A view in this package has one job: decide what to show. It looks at the request, talks to whatever data it needs, and returns a dict. It never touches...">
 </head>
 
 <body class="nav-sidebar floating nav-fixed quarto-light">
@@ -310,34 +310,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>A view is any FastAPI path operation, sync or async. Decorate it with <code>@fastapi_chameleon.template(...)</code> and return a <code>dict</code>. The decorator renders the template with that dict as its variables and hands FastAPI a <code>fastapi.Response</code>.</p>
+<p>A view in this package has one job: decide what to show. It looks at the request, talks to whatever data it needs, and returns a <code>dict</code>. It never touches HTML. The template does the showing, and the decorator is the handshake between them.</p>
+<p>That split is the point. Views stay small and testable, templates stay editable by someone who never opens a Python file, and FastAPI keeps doing all the things it is good at underneath.</p>
 <section id="decorator-order" class="level1">
 <h1>Decorator order</h1>
-<p>The route decorator goes on the outside and the template decorator sits directly on the function:</p>
+<p>The route decorator goes on the outside. <code>@fastapi_chameleon.template(...)</code> sits directly on the function.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.post</span>(<span class="st">'/'</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>(<span class="st">'home/index.pt'</span>)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> home_post(request: fastapi.Request):</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    form <span class="op">=</span> <span class="cf">await</span> request.form()</span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    vm <span class="op">=</span> PersonViewModel(<span class="op">**</span>form)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> vm.model_dump()</span></code></pre></div>
-<p>Dependency injection keeps working. Path parameters, query parameters, <code>Request</code>, and <code>Depends(...)</code> are all resolved as usual, because the decorator preserves the view’s signature with <code>functools.wraps</code> and ParamSpec-based overloads. The parameters still show up in the OpenAPI schema.</p>
+<p>FastAPI’s dependency injection does not notice the decorator is there. Path parameters, query parameters, <code>Request</code>, and <code>Depends(...)</code> all resolve exactly as before, because the wrapper is built with <code>functools.wraps</code> and the decorator is typed with ParamSpec-based overloads. Your parameters still appear in the OpenAPI schema, and your type checker still sees the original signature.</p>
 </section>
 <section id="three-ways-to-name-the-template" class="level1">
 <h1>Three ways to name the template</h1>
 <div class="sourceCode" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>(<span class="st">'home/index.pt'</span>)   <span class="co"># explicit template file</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>()                  <span class="co"># inferred template name</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>                    <span class="co"># bare form, also inferred</span></span></code></pre></div>
-<p>An explicit path is resolved relative to the folder passed to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>.</p>
-<p>When no name is given, the decorator derives one from where the view lives:</p>
+<p>The explicit form is resolved relative to the folder you passed to <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>. Nothing clever happens, which is exactly why most people use it.</p>
+<p>The inferred forms are for the tidy-minded. Leave the name off and the decorator works it out from where the view lives:</p>
 <ul>
 <li>The file is <code>{module}/{function_name}</code> under the template folder, where <code>module</code> is the last segment of the view’s dotted module name.</li>
 <li>An <code>.html</code> file is preferred. If it does not exist, <code>.pt</code> is used.</li>
 <li><code>def index()</code> in <code>views/home.py</code> resolves to <code>templates/home/index.html</code>, falling back to <code>templates/home/index.pt</code>.</li>
 </ul>
-<p>The inference runs once, when the module is imported, so there is no per-request filesystem work. It also means <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> must have run before the view module is imported. If it has not, the folder silently defaults to <code>templates</code> relative to the current working directory, and a later <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> does not re-resolve names that were already derived. Explicit template names do not have this problem.</p>
+<p>Inference happens once, when the module is imported, so there is no filesystem lookup per request. It also means the engine must already know its folder when the view module is imported. If <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> has not run yet, the folder silently defaults to <code>templates</code> relative to the current working directory, and a later <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> does not go back and re-resolve names that were already derived. Explicit template names never have this problem. Pick inference when your project layout is disciplined, and pick explicit names when you would rather read the path than remember the rule.</p>
 </section>
 <section id="what-a-view-may-return" class="level1">
 <h1>What a view may return</h1>
+<p>Three outcomes, and only three.</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -360,7 +362,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>Returning a <code>Response</code> is how you redirect or send JSON from a page view:</p>
+<p>The second row is how Shelf Life’s login form works. A successful login should not render the login page again, it should send the customer to their account. Returning a <code>Response</code> says “I have already decided what to send, step aside”:</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.post</span>(<span class="st">'/account/login'</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>(<span class="st">'account/login.pt'</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> login(request: fastapi.Request):</span>
@@ -369,25 +371,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> fastapi.responses.RedirectResponse(<span class="st">'/account'</span>, status_code<span class="op">=</span><span class="dv">302</span>)</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">'error'</span>: <span class="st">'Invalid login'</span>}  <span class="co"># re-render the form with an error</span></span></code></pre></div>
-<p>If you have a Pydantic model, return <code>model.model_dump()</code>. If you have a dataclass, return <code>dataclasses.asdict(obj)</code>. Forgetting the <code>return</code> statement returns <code>None</code>, which raises the exception above with the message <code>Invalid return type &lt;class 'NoneType'&gt;</code>.</p>
+<p>The third row is strict on purpose. A view that returns <code>None</code> because someone forgot the <code>return</code> statement, or returns a Pydantic model straight from the database layer, fails loudly with <code>Invalid return type &lt;class 'NoneType'&gt;</code> rather than rendering a blank page at 2am. Convert first: <code>model.model_dump()</code> for Pydantic, <code>dataclasses.asdict(obj)</code> for dataclasses, <code>{'books': books}</code> for a list.</p>
 </section>
 <section id="non-html-output" class="level1">
 <h1>Non-HTML output</h1>
-<p>The decorator takes a <code>mimetype</code> for templates that are not HTML:</p>
+<p>Templates are not only for pages. Shelf Life’s sitemap is a Chameleon template too, and the decorator takes a <code>mimetype</code> for exactly that:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.get</span>(<span class="st">'/sitemap.xml'</span>)</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">@fastapi_chameleon.template</span>(<span class="st">'seo/sitemap.pt'</span>, mimetype<span class="op">=</span><span class="st">'application/xml'</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sitemap():</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {<span class="st">'urls'</span>: load_urls()}</span></code></pre></div>
-<p>The decorator always answers with status <code>200</code> for a rendered dict. Error pages raised with <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> or <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> ignore this <code>mimetype</code> and are always <code>text/html</code>. See <a href="../user-guide/error-pages.html">Friendly Error Pages</a>.</p>
+<p>A rendered dict always goes out with status <code>200</code>. Error pages raised with <a href="../reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> or <a href="../reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> ignore this <code>mimetype</code> and are always <code>text/html</code>, because a browser that asked for a sitemap and got a 404 should still see a readable page. See <a href="../user-guide/error-pages.html">Friendly Error Pages</a>.</p>
 </section>
 <section id="manual-rendering-with-response" class="level1">
 <h1>Manual rendering with <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a></h1>
-<p>When the decorator does not fit, for example because you need a status code other than <code>200</code> or you want to render inside a view that returns several different pages, call <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a> directly:</p>
+<p>Sometimes you want the wheel. A status code other than <code>200</code>, a view that renders one of several different templates depending on the data, a response assembled outside a route entirely. For those, skip the decorator and call <a href="../reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="at">@router.get</span>(<span class="st">'/report'</span>)</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> report():</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> fastapi_chameleon.response(<span class="st">'reports/summary.pt'</span>, status_code<span class="op">=</span><span class="dv">202</span>, title<span class="op">=</span><span class="st">'Monthly summary'</span>)</span></code></pre></div>
-<p>It renders the template with the keyword arguments as the model and returns a <code>fastapi.Response</code> with the given <code>mimetype</code> (default <code>text/html</code>) and <code>status_code</code> (default <code>200</code>). It needs <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> to have run, like everything else.</p>
-<p>To get the rendered HTML as a plain string, for an email body or a test, use <code>fastapi_chameleon.engine.render(template_file, **model)</code>.</p>
+<p>It renders the template with the keyword arguments as the model and returns a <code>fastapi.Response</code> with the given <code>mimetype</code> (default <code>text/html</code>) and <code>status_code</code> (default <code>200</code>). It needs <a href="../reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> to have run, like everything else in the package.</p>
+<p>And when you want the HTML as a plain string, say for the body of a confirmation email or an assertion in a test, use <code>fastapi_chameleon.engine.render(template_file, **model)</code>.</p>
 </section>
 <section id="reference" class="level1">
 <h1>Reference</h1>

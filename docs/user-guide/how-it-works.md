@@ -1,47 +1,49 @@
 # How It Works
 
-The whole library is three small modules. Knowing what happens at import time versus request time explains every gotcha in the other pages.
+The whole library is three short modules, and you can read `engine.py` in the time it takes to make coffee. But the behaviour that matters is about timing: what happens once when your app imports, what happens on every request, and how an error page gets from a function three layers deep back up to the browser. Know those three and every rule in the rest of this guide becomes obvious.
 
 
-# Module-global engine state
+# Act one: the engine
 
-[global_init()](../reference/global_init.md#fastapi_chameleon.global_init) stores two module-level values in `fastapi_chameleon.engine`: a Chameleon `PageTemplateLoader` and the template folder path. Every render goes through that one loader. There is one engine per process, which is why [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) is called once and why tests clear it between runs with `engine.clear()`.
+[global_init()](../reference/global_init.md#fastapi_chameleon.global_init) stores two module-level values in `fastapi_chameleon.engine`: a Chameleon `PageTemplateLoader` and the template folder path. That is the entire state of the library. Every render in the process goes through that one loader, which is why [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) is called once, why a second call is ignored by default, and why tests clear it between runs with `engine.clear()`.
+
+Think of it as the shop's single key cabinet. Everyone who needs a template goes to the same cabinet, and you set up the cabinet before opening the doors.
 
 
-# Decoration time
+# Act two: decoration time
 
-`@template(...)` runs when the view module is imported. At that moment it decides three things:
+`@template(...)` runs when the view module is imported, not when a request arrives. At that moment it makes three decisions and never revisits them:
 
 1.  **Which template.** An explicit name is kept as-is. A missing name is derived from the view's module and function name, and the `.html` or `.pt` choice is made by checking the filesystem once.
-2.  **Sync or async.** `inspect.iscoroutinefunction` picks a synchronous or asynchronous wrapper. The wrapper calls or awaits the view, then renders.
-3.  **The signature.** The wrapper is wrapped with `functools.wraps`, and [template()](../reference/template.md#fastapi_chameleon.template) is typed with ParamSpec-based overloads, so FastAPI's dependency injection and type checkers see the original parameters.
+2.  **Sync or async.** `inspect.iscoroutinefunction` picks a synchronous or asynchronous wrapper. The async wrapper awaits the view, the sync one calls it, and both then render.
+3.  **The signature.** The wrapper is wrapped with `functools.wraps`, and [template()](../reference/template.md#fastapi_chameleon.template) is typed with ParamSpec-based overloads, so FastAPI's dependency injection and your type checker both see the original parameters, not `*args, **kwargs`.
 
-Because the template folder is read at decoration time for name inference, [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) has to run before the view module is imported. If it has not, the folder defaults to `templates` relative to the current working directory.
+Because the template folder is read at decoration time for name inference, [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) has to run before the view module is imported. If it has not, the folder defaults to `templates` relative to the current working directory. This is the single most important timing rule in the package, and it only bites the inferred-name forms.
 
 
-# Request time
+# Act three: request time
 
-The wrapper calls the view and looks at the return value:
+A request comes in. FastAPI resolves the dependencies and calls the wrapper, which calls the view and looks at what came back:
 
-- A `fastapi.Response` is returned as-is.
-- A `dict` is passed to the loader as the template model and the HTML comes back in a `fastapi.Response` with the decorator's `mimetype` and status `200`.
+- A `fastapi.Response` is returned as-is. The template is never touched.
+- A `dict` is handed to the loader as the template model, and the HTML comes back in a `fastapi.Response` with the decorator's `mimetype` and status `200`.
 - Anything else raises [FastAPIChameleonException](../reference/exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException).
 
 Rendering before [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) has run raises [FastAPIChameleonException](../reference/exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException) too. A template file that does not exist raises `ValueError` from Chameleon's loader.
 
 
-# Error pages are exceptions
+# The emergency exits
 
-[not_found()](../reference/not_found.md#fastapi_chameleon.not_found) and [generic_error()](../reference/generic_error.md#fastapi_chameleon.generic_error) do not return. They raise [FastAPIChameleonNotFoundException](../reference/exceptions.FastAPIChameleonNotFoundException.md#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException) or [FastAPIChameleonGenericException](../reference/exceptions.FastAPIChameleonGenericException.md#fastapi_chameleon.exceptions.FastAPIChameleonGenericException), both subclasses of [FastAPIChameleonException](../reference/exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException). The wrapper catches exactly those two types and renders the error template with the status carried by the exception, always as `text/html`. Any other exception propagates to FastAPI as usual.
+[not_found()](../reference/not_found.md#fastapi_chameleon.not_found) and [generic_error()](../reference/generic_error.md#fastapi_chameleon.generic_error) do not return. They raise [FastAPIChameleonNotFoundException](../reference/exceptions.FastAPIChameleonNotFoundException.md#fastapi_chameleon.exceptions.FastAPIChameleonNotFoundException) or [FastAPIChameleonGenericException](../reference/exceptions.FastAPIChameleonGenericException.md#fastapi_chameleon.exceptions.FastAPIChameleonGenericException), both subclasses of [FastAPIChameleonException](../reference/exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException). The wrapper from act two has a `try` around the view call that catches exactly those two types, and nothing else. When it catches one, it renders the exception's template with the exception's status, always as `text/html`. Any other exception passes straight through to FastAPI.
 
-This is why the functions work from anywhere below a decorated view, and why they do nothing useful outside one.
+That is why the functions work from anywhere below a decorated view: exceptions travel up the call stack for free, so a repository can refuse a request and the decorator at the top turns the refusal into a page. It is also why they do nothing useful outside one. No wrapper, no `try`, no page.
 
 
 # Template caching
 
-Chameleon compiles each template to a Python module on first use and keeps it in memory. With `auto_reload=False` that compiled version is used for the rest of the process. With `auto_reload=True` the loader checks the file's modification time before each use and recompiles when it changed.
+Chameleon compiles each template to a Python module on first use and keeps it in memory. With `auto_reload=False`, that compiled version serves every request for the rest of the process. With `auto_reload=True`, the loader checks the file's modification time before each use and recompiles when it changed. The first request after a deploy pays the compile cost; every request after that is a function call.
 
 
 # Source
 
-The code is short and readable: [engine.py](https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py) and [exceptions.py](https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py).
+The code is short and readable, and reading it is the fastest way to confirm anything on this page: [engine.py](https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/engine.py) and [exceptions.py](https://github.com/mikeckennedy/fastapi-chameleon/blob/main/fastapi_chameleon/exceptions.py).

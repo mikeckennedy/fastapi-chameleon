@@ -1,11 +1,11 @@
 # Testing and CI
 
-Decorated views stay plain Python callables. You can call them directly in a test, without `TestClient` or a running server, and inspect the `fastapi.Response` they return. This is how the package tests itself.
+Here is the pleasant secret of this package: a decorated view is still just a Python function. No server, no port, no `TestClient`, no fixture that spins up an app. You call the view, you get back a `fastapi.Response`, and you look inside it. This is how the package tests itself, and it is how Shelf Life's test suite runs in well under a second.
 
 
 # A fixture for the engine
 
-Engine state is module-global, so give each test a fresh engine and clear it afterwards:
+The engine is module-global, one per process, so tests need two things from a fixture: initialise it before the test, and clear it afterwards so the next test starts clean.
 
 ``` python
 # conftest.py
@@ -26,7 +26,7 @@ def setup_global_template(pytestconfig):
 Two details keep this reliable:
 
 - [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) ignores repeat calls by default. If a test calls it directly with a different folder, pass `cache_init=False`.
-- Always clear in teardown. A test that asserts "rendering before [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) raises" will pass or fail depending on what ran before it otherwise.
+- Always clear in teardown. A test that asserts "rendering before [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) raises" will pass or fail depending on which test ran before it otherwise, and flaky tests that depend on ordering are the kind you only notice in CI on a Friday.
 
 
 # Calling views directly
@@ -70,12 +70,12 @@ def test_missing_item_gives_404(setup_global_template):
     assert resp.status_code == 404
 ```
 
-Pass view arguments positionally or by keyword, exactly as FastAPI would. If a view takes a `Request`, build one with `fastapi.Request(scope)` or use `TestClient` for that test.
+Pass view arguments positionally or by keyword, exactly as FastAPI would. Async views are one `asyncio.run()` away. If a view takes a `Request`, build one with `fastapi.Request(scope)` or use `TestClient` for that particular test.
 
 
 # Through FastAPI
 
-When you want to test routing, dependencies, and middleware together, use FastAPI's `TestClient` against the real app. Decorated views need nothing special:
+When the thing under test is the routing, the dependencies, or the middleware rather than the view, use FastAPI's `TestClient` against the real app. Decorated views need nothing special:
 
 ``` python
 from fastapi.testclient import TestClient
@@ -95,7 +95,7 @@ Make sure [global_init()](../reference/global_init.md#fastapi_chameleon.global_i
 
 # CI
 
-The package has no compiled parts, so CI is a pytest run per interpreter. A GitHub Actions matrix:
+The package has no compiled parts and two dependencies, so CI is a pytest run per interpreter and nothing more. A GitHub Actions matrix:
 
 ``` yaml
 jobs:

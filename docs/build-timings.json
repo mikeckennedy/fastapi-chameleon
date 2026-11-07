@@ -1,120 +1,120 @@
 {
-  "build_time": "2026-11-07T17:18:41Z",
-  "total_seconds": 7.06,
+  "build_time": "2026-11-07T17:29:34Z",
+  "total_seconds": 6.484,
   "pages": [
     {
       "page": "user-guide/views.qmd",
-      "seconds": 1.045,
+      "seconds": 0.993,
       "frozen": false
     },
     {
       "page": "changelog.qmd",
-      "seconds": 1.04,
+      "seconds": 0.925,
       "frozen": false
     },
     {
       "page": "index.qmd",
-      "seconds": 0.466,
+      "seconds": 0.407,
       "frozen": false
     },
     {
       "page": "user-guide/templates.qmd",
-      "seconds": 0.378,
+      "seconds": 0.337,
       "frozen": false
     },
     {
       "page": "package-info.qmd",
-      "seconds": 0.346,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonNotFoundException.qmd",
-      "seconds": 0.263,
+      "seconds": 0.321,
       "frozen": false
     },
     {
       "page": "user-guide/troubleshooting.qmd",
-      "seconds": 0.229,
-      "frozen": false
-    },
-    {
-      "page": "user-guide/testing.qmd",
-      "seconds": 0.225,
+      "seconds": 0.22,
       "frozen": false
     },
     {
       "page": "user-guide/getting-started.qmd",
-      "seconds": 0.222,
+      "seconds": 0.21,
+      "frozen": false
+    },
+    {
+      "page": "user-guide/testing.qmd",
+      "seconds": 0.209,
       "frozen": false
     },
     {
       "page": "user-guide/configuration.qmd",
-      "seconds": 0.217,
-      "frozen": false
-    },
-    {
-      "page": "reference/global_init.qmd",
-      "seconds": 0.211,
-      "frozen": false
-    },
-    {
-      "page": "skills.qmd",
-      "seconds": 0.208,
-      "frozen": false
-    },
-    {
-      "page": "reference/template.qmd",
-      "seconds": 0.206,
-      "frozen": false
-    },
-    {
-      "page": "user-guide/error-pages.qmd",
       "seconds": 0.205,
       "frozen": false
     },
     {
-      "page": "reference/generic_error.qmd",
-      "seconds": 0.204,
-      "frozen": false
-    },
-    {
-      "page": "user-guide/faq.qmd",
-      "seconds": 0.204,
-      "frozen": false
-    },
-    {
-      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
+      "page": "user-guide/error-pages.qmd",
       "seconds": 0.203,
       "frozen": false
     },
     {
-      "page": "reference/response.qmd",
-      "seconds": 0.203,
-      "frozen": false
-    },
-    {
-      "page": "user-guide/how-it-works.qmd",
-      "seconds": 0.203,
-      "frozen": false
-    },
-    {
-      "page": "license.qmd",
+      "page": "reference/template.qmd",
       "seconds": 0.202,
       "frozen": false
     },
     {
+      "page": "skills.qmd",
+      "seconds": 0.196,
+      "frozen": false
+    },
+    {
       "page": "reference/exceptions.FastAPIChameleonException.qmd",
-      "seconds": 0.194,
+      "seconds": 0.193,
+      "frozen": false
+    },
+    {
+      "page": "reference/response.qmd",
+      "seconds": 0.192,
+      "frozen": false
+    },
+    {
+      "page": "user-guide/faq.qmd",
+      "seconds": 0.191,
+      "frozen": false
+    },
+    {
+      "page": "reference/generic_error.qmd",
+      "seconds": 0.189,
+      "frozen": false
+    },
+    {
+      "page": "reference/global_init.qmd",
+      "seconds": 0.188,
+      "frozen": false
+    },
+    {
+      "page": "user-guide/how-it-works.qmd",
+      "seconds": 0.188,
+      "frozen": false
+    },
+    {
+      "page": "license.qmd",
+      "seconds": 0.187,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonGenericException.qmd",
+      "seconds": 0.185,
       "frozen": false
     },
     {
       "page": "reference/index.qmd",
-      "seconds": 0.194,
+      "seconds": 0.182,
       "frozen": false
     },
     {
       "page": "reference/not_found.qmd",
-      "seconds": 0.192,
+      "seconds": 0.181,
+      "frozen": false
+    },
+    {
+      "page": "reference/exceptions.FastAPIChameleonNotFoundException.qmd",
+      "seconds": 0.18,
       "frozen": false
     }
   ]
