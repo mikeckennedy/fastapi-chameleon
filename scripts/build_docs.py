@@ -20,6 +20,17 @@ REPO_ROOT = PKG_DIR  # package is at the git root -> docs/ is committed beside p
 SITE = PKG_DIR / 'great-docs' / '_site'
 DEST = REPO_ROOT / 'docs'
 
+# Files Great Docs only writes when the package imported cleanly in its build environment (llms-full.txt)
+# or when the hand-written skill was found (skill.md and its .well-known copies). Great Docs prints a
+# warning and still reports success when they are skipped, so check the output instead of the log.
+REQUIRED = (
+    'llms.txt',
+    'llms-full.txt',
+    'skill.md',
+    '.well-known/agent-skills/index.json',
+    '.well-known/agent-skills/fastapi-chameleon/SKILL.md',
+)
+
 
 def main() -> int:
     # Prefer the great-docs installed in the same venv as this interpreter.
@@ -29,6 +40,10 @@ def main() -> int:
         return 1
     if not SITE.is_dir():
         print(f'build output missing: {SITE}', file=sys.stderr)
+        return 1
+    missing = [name for name in REQUIRED if not (SITE / name).is_file()]
+    if missing:
+        print(f'build output incomplete, missing: {", ".join(missing)}', file=sys.stderr)
         return 1
     if DEST.exists():
         shutil.rmtree(DEST)

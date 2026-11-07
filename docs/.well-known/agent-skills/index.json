@@ -2,7 +2,7 @@
   "skills": [
     {
       "name": "fastapi-chameleon",
-      "description": "Adds integration of the Chameleon template language to FastAPI. Use when writing Python code that uses the fastapi_chameleon package.",
+      "description": "Server-rendered HTML for FastAPI using the Chameleon template language. One global_init() call plus a @template decorator turns a view that returns a dict into a rendered text/html response, and not_found() and generic_error() replace FastAPI's JSON errors with HTML pages. Use when adding fastapi-chameleon to a FastAPI app, writing or editing .pt or .html Chameleon templates (TAL, METAL, ${} syntax, not Jinja), wiring global_init() and import order, returning redirects from page views, building friendly 404 or error pages, testing decorated views with pytest, or when FastAPIChameleonException, \"You must call global_init()\", \"Invalid return type\", \"Template not found\", or a 500 after calling not_found() appears.",
       "files": [
         "SKILL.md"
       ]

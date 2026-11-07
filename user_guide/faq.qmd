@@ -1,0 +1,47 @@
+---
+title: "FAQ"
+---
+
+## Can I use Jinja instead of Chameleon?
+
+Not with this package. Use [fastapi-jinja](https://github.com/AGeekInside/fastapi-jinja), which has the same shape: one `global_init()`, one `@template` decorator, views return dicts.
+
+## Does it work with `APIRouter`?
+
+Yes. Put `@router.get(...)` on the outside and `@fastapi_chameleon.template(...)` directly on the function, exactly as with `@app.get(...)`.
+
+## Do async views work?
+
+Yes. The decorator detects a coroutine function at decoration time and awaits it. Nothing else changes.
+
+## Can I return a Pydantic model from a view?
+
+No. Return `model.model_dump()`. Only a `dict` or a `fastapi.Response` is accepted, and anything else raises `FastAPIChameleonException`.
+
+## How do I pass the request to the template?
+
+Put it in the dict: `return {'request': request, 'title': 'Home'}`. The template can then read `${request.url.path}` or anything else on it.
+
+## Can I have more than one template folder?
+
+Not at the same time. There is one loader per process. Use subfolders of a single root and refer to them in template paths, such as `admin/users.pt`.
+
+## Why does my 404 page come back as JSON, or as a 500?
+
+Because `not_found()` was called from code that is not below a `@template`-decorated view. The decorator is what turns the exception into a page. Decorate the route, or raise `fastapi.HTTPException(404)` from undecorated code. See [Friendly Error Pages](error-pages.qmd).
+
+## Why are my template edits not showing up?
+
+`auto_reload` is `False` by default and templates are compiled once. Pass `auto_reload=True` to `global_init()` while developing. Note that a second `global_init()` call does not change the setting unless you pass `cache_init=False`. See [Configuration](configuration.qmd).
+
+## Can I use the template name inference?
+
+Yes, but call `global_init()` before importing your view modules, and keep your template folder organised as `{module}/{function}.pt`. See [Decorating Views](views.qmd). If you want fewer surprises, name templates explicitly.
+
+## What Python versions are supported?
+
+Python 3.10 and newer. The test suite runs on 3.10 through 3.15.
+
+## Where is the full list of errors?
+
+[Troubleshooting](troubleshooting.qmd) lists every exception the package raises, what it means, and how to fix it.

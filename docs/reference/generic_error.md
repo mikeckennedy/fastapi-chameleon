@@ -17,6 +17,13 @@ generic_error(
 
 Like [not_found()](not_found.md#fastapi_chameleon.not_found), but for any error: call it from inside a [template()](template.md#fastapi_chameleon.template)-decorated view to render `template_file` with the HTTP `status_code` you choose (for example `401` or `500`). The decorator catches the raised exception and builds the response. This function never returns normally.
 
+## Examples
+
+``` python
+if not user.is_admin:
+    fastapi_chameleon.generic_error('errors/403.pt', 403, template_data={'user': user})
+```
+
 
 ## Parameters
 

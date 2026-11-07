@@ -2,6 +2,11 @@
 line-length = 120
 format.quote-style = "single"
 
+# Ruff 0.17+ includes "*.md" by default and formats the code blocks inside Markdown. That would rewrap the
+# README and SKILL.md snippets and flag the generated docs/ mirror, so only Python (and notebooks/config) is
+# included here.
+include = ["*.py", "*.pyi", "*.pyw", "*.ipynb", "**/pyproject.toml", "**/ruff.toml", "**/.ruff.toml"]
+
 # Enable Pyflakes `E` and `F` codes by default.
 lint.select = ["E", "F"]
 lint.ignore = []
@@ -24,6 +29,8 @@ exclude = [
     "buck-out",
     "build",
     "dist",
+    "docs",
+    "great-docs",
     "node_modules",
     ".env",
     ".venv",

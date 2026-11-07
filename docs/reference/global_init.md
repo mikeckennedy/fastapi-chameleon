@@ -15,14 +15,24 @@ global_init(
 ```
 
 
-Call this once at startup, pointing it at the folder that holds your `*.pt` templates. Template paths used elsewhere (in [template()](template.md#fastapi_chameleon.template), [response()](response.md#fastapi_chameleon.response), [not_found()](not_found.md#fastapi_chameleon.not_found), and [generic_error()](generic_error.md#fastapi_chameleon.generic_error)) are resolved relative to this folder.
+Call this once at startup, pointing it at the folder that holds your `*.pt` templates. Template paths used elsewhere (in [template()](template.md#fastapi_chameleon.template), [response()](response.md#fastapi_chameleon.response), [not_found()](not_found.md#fastapi_chameleon.not_found), and [generic_error()](generic_error.md#fastapi_chameleon.generic_error)) are resolved relative to this folder. Call it before the modules that define decorated views are imported, so that template name inference sees the right folder.
+
+## Examples
+
+``` python
+from pathlib import Path
+import fastapi_chameleon
+```
+
+    templates = Path(__file__).resolve().parent / 'templates'
+    fastapi_chameleon.global_init(templates, auto_reload=dev_mode)
 
 
 ## Parameters
 
 
-`template_folder: str`  
-Path to the folder containing your Chameleon templates.
+`template_folder: Union[str, os.PathLike[str]]`  
+Path to the folder containing your Chameleon templates, as a `str` or any `os.PathLike` such as `pathlib.Path`.
 
 `auto_reload: bool = ``False`  
 Reload templates from disk when they change. Handy in development; leave `False` in production. Defaults to `False`.

@@ -133,3 +133,6 @@ dmypy.json
 .pyre/
 .idea
 .DS_Store
+
+# rumdl (markdown linter) cache
+.rumdl_cache/

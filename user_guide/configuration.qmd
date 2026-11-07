@@ -1,0 +1,71 @@
+---
+title: "Configuration"
+---
+
+All configuration happens through `global_init()`. There are no environment variables, no settings file, and no command-line interface.
+
+## `global_init()` parameters
+
+| Parameter | Type | Default | Effect |
+|---|---|---|---|
+| `template_folder` | `str` or `os.PathLike` | required | Root folder for every template path. Must exist and be a directory, otherwise `FastAPIChameleonException` is raised. |
+| `auto_reload` | `bool` | `False` | When `True`, Chameleon checks template files for changes on each use and recompiles them. When `False`, each template is compiled once per process. |
+| `cache_init` | `bool` | `True` | When `True`, a call made after the engine is already initialized is ignored. When `False`, the call replaces the loader and folder. |
+
+Each row was checked against the code and by running it. The `auto_reload` flag is passed straight to Chameleon's `PageTemplateLoader`.
+
+## Calling `global_init()` more than once
+
+| Situation | Result |
+|---|---|
+| Second call, `cache_init=True` (default) | Silently ignored. The first folder and `auto_reload` setting stay in effect. |
+| Second call, `cache_init=False` | New loader and folder take effect for every template rendered from now on. |
+| `engine.clear()` then `global_init()` | Same as a first call. |
+
+A consequence worth knowing: you cannot change `auto_reload` by calling `global_init()` again with the default `cache_init`. Pass `cache_init=False` or call `fastapi_chameleon.engine.clear()` first.
+
+## Development versus production
+
+```python
+import os
+from pathlib import Path
+
+import fastapi_chameleon
+
+dev_mode = os.environ.get('APP_ENV', 'dev') == 'dev'  # your own switch, the package reads no env vars
+
+BASE_DIR = Path(__file__).resolve().parent
+fastapi_chameleon.global_init(BASE_DIR / 'templates', auto_reload=dev_mode)
+```
+
+With `auto_reload=False`, Chameleon compiles each template to Python the first time it is used and reuses the compiled version for the life of the process. That is the setting you want under load. With `auto_reload=True`, every use checks the file's modification time, which is cheap but not free.
+
+## The decorator
+
+`@template(template_file=None, mimetype='text/html')` has two options:
+
+| Parameter | Default | Effect |
+|---|---|---|
+| `template_file` | `None` | Template path relative to the folder. `None` means infer `{module}/{function}.html`, then `.pt`. |
+| `mimetype` | `'text/html'` | Content type of the response for a rendered `dict`. Ignored for error pages. |
+
+There is no `status_code` parameter on the decorator. A rendered dict is always a `200`. Use `response()` for another status, or `generic_error()` for error pages.
+
+## Where `global_init()` goes
+
+Call it at import time in the module that creates the app, before the view modules are imported. If views are registered in a separate module, the order looks like this:
+
+```python
+# main.py
+import fastapi
+import fastapi_chameleon
+
+app = fastapi.FastAPI()
+fastapi_chameleon.global_init('templates')
+
+from views import home  # noqa: E402  imported after init on purpose
+
+app.include_router(home.router)
+```
+
+The order matters only for views that let the decorator infer the template name. Views with explicit template names resolve them at request time against whatever folder is configured then.

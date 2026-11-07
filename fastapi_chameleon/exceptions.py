@@ -9,6 +9,13 @@ class FastAPIChameleonException(Exception):
     ``global_init()`` with a missing or invalid template folder, rendering before
     ``global_init()`` has run, or returning an unsupported type from a decorated view.
     The control-flow exceptions below subclass it, so catching this type catches them all.
+
+    Example::
+
+        try:
+            fastapi_chameleon.global_init(settings.template_folder)
+        except FastAPIChameleonException as e:
+            raise SystemExit(f'Template folder problem: {e}')
     """
 
     pass
@@ -22,9 +29,18 @@ class FastAPIChameleonNotFoundException(FastAPIChameleonException):
     ``template_file`` with an HTTP 404 status. You normally raise it indirectly via
     ``not_found()`` rather than constructing it yourself.
 
-    :ivar str template_file: The template to render for the 404 response (the constructor
+    Example::
+
+        try:
+            fastapi_chameleon.not_found('errors/custom_404.pt')
+        except FastAPIChameleonNotFoundException as e:
+            assert e.template_file == 'errors/custom_404.pt'
+
+    :ivar template_file: The template to render for the 404 response (the constructor
         accepts it as ``four04template_file``).
-    :ivar Optional[str] message: The optional human-readable message describing the error.
+    :vartype template_file: str
+    :ivar message: The optional human-readable message describing the error.
+    :vartype message: Optional[str]
     """
 
     def __init__(self, message: Optional[str] = None, four04template_file: str = 'errors/404.pt'):
@@ -42,10 +58,21 @@ class FastAPIChameleonGenericException(FastAPIChameleonException):
     renders ``template_file`` with the chosen ``status_code``. You normally raise it
     indirectly via ``generic_error()`` rather than constructing it yourself.
 
-    :ivar str template_file: The template to render for the error response.
-    :ivar int status_code: The HTTP status code to return.
-    :ivar Optional[str] message: The optional human-readable message describing the error.
-    :ivar Optional[dict] template_data: Optional variables passed to the template when rendering.
+    Example::
+
+        try:
+            fastapi_chameleon.generic_error('errors/403.pt', 403, template_data={'user': user})
+        except FastAPIChameleonGenericException as e:
+            assert e.status_code == 403 and e.template_data == {'user': user}
+
+    :ivar template_file: The template to render for the error response.
+    :vartype template_file: str
+    :ivar status_code: The HTTP status code to return.
+    :vartype status_code: int
+    :ivar message: The optional human-readable message describing the error.
+    :vartype message: Optional[str]
+    :ivar template_data: Optional variables passed to the template when rendering.
+    :vartype template_data: Optional[dict]
     """
 
     def __init__(

@@ -18,6 +18,14 @@ response(
 
 Use this when you want a rendered `Response` without the [template()](template.md#fastapi_chameleon.template) decorator, for example to return a fully-formed response from a view that does its own branching. Requires [global_init()](global_init.md#fastapi_chameleon.global_init) to have been called first.
 
+## Examples
+
+``` python
+@app.get('/sitemap.xml')
+def sitemap():
+    return fastapi_chameleon.response('seo/sitemap.pt', mimetype='application/xml', urls=load_urls())
+```
+
 
 ## Parameters
 

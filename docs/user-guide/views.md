@@ -1,0 +1,97 @@
+# Decorating Views
+
+A view is any FastAPI path operation, sync or async. Decorate it with `@fastapi_chameleon.template(...)` and return a `dict`. The decorator renders the template with that dict as its variables and hands FastAPI a `fastapi.Response`.
+
+
+# Decorator order
+
+The route decorator goes on the outside and the template decorator sits directly on the function:
+
+``` python
+@router.post('/')
+@fastapi_chameleon.template('home/index.pt')
+async def home_post(request: fastapi.Request):
+    form = await request.form()
+    vm = PersonViewModel(**form)
+    return vm.model_dump()
+```
+
+Dependency injection keeps working. Path parameters, query parameters, `Request`, and `Depends(...)` are all resolved as usual, because the decorator preserves the view's signature with `functools.wraps` and ParamSpec-based overloads. The parameters still show up in the OpenAPI schema.
+
+
+# Three ways to name the template
+
+``` python
+@fastapi_chameleon.template('home/index.pt')   # explicit template file
+@fastapi_chameleon.template()                  # inferred template name
+@fastapi_chameleon.template                    # bare form, also inferred
+```
+
+An explicit path is resolved relative to the folder passed to [global_init()](../reference/global_init.md#fastapi_chameleon.global_init).
+
+When no name is given, the decorator derives one from where the view lives:
+
+- The file is `{module}/{function_name}` under the template folder, where `module` is the last segment of the view's dotted module name.
+- An `.html` file is preferred. If it does not exist, `.pt` is used.
+- `def index()` in `views/home.py` resolves to `templates/home/index.html`, falling back to `templates/home/index.pt`.
+
+The inference runs once, when the module is imported, so there is no per-request filesystem work. It also means [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) must have run before the view module is imported. If it has not, the folder silently defaults to `templates` relative to the current working directory, and a later [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) does not re-resolve names that were already derived. Explicit template names do not have this problem.
+
+
+# What a view may return
+
+| Return value | Result |
+|----|----|
+| `dict` | Rendered through the template as its variables. |
+| any `fastapi.Response` | Passed through untouched. The template is skipped. |
+| anything else (`None`, a Pydantic model, a list) | [FastAPIChameleonException](../reference/exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException) is raised at request time. |
+
+Returning a `Response` is how you redirect or send JSON from a page view:
+
+``` python
+@router.post('/account/login')
+@fastapi_chameleon.template('account/login.pt')
+async def login(request: fastapi.Request):
+    user = await try_login(request)
+    if user:
+        return fastapi.responses.RedirectResponse('/account', status_code=302)
+
+    return {'error': 'Invalid login'}  # re-render the form with an error
+```
+
+If you have a Pydantic model, return `model.model_dump()`. If you have a dataclass, return `dataclasses.asdict(obj)`. Forgetting the `return` statement returns `None`, which raises the exception above with the message `Invalid return type <class 'NoneType'>`.
+
+
+# Non-HTML output
+
+The decorator takes a `mimetype` for templates that are not HTML:
+
+``` python
+@router.get('/sitemap.xml')
+@fastapi_chameleon.template('seo/sitemap.pt', mimetype='application/xml')
+def sitemap():
+    return {'urls': load_urls()}
+```
+
+The decorator always answers with status `200` for a rendered dict. Error pages raised with [not_found()](../reference/not_found.md#fastapi_chameleon.not_found) or [generic_error()](../reference/generic_error.md#fastapi_chameleon.generic_error) ignore this `mimetype` and are always `text/html`. See [Friendly Error Pages](error-pages.md).
+
+
+# Manual rendering with [response()](../reference/response.md#fastapi_chameleon.response)
+
+When the decorator does not fit, for example because you need a status code other than `200` or you want to render inside a view that returns several different pages, call [response()](../reference/response.md#fastapi_chameleon.response) directly:
+
+``` python
+@router.get('/report')
+def report():
+    return fastapi_chameleon.response('reports/summary.pt', status_code=202, title='Monthly summary')
+```
+
+It renders the template with the keyword arguments as the model and returns a `fastapi.Response` with the given `mimetype` (default `text/html`) and `status_code` (default `200`). It needs [global_init()](../reference/global_init.md#fastapi_chameleon.global_init) to have run, like everything else.
+
+To get the rendered HTML as a plain string, for an email body or a test, use `fastapi_chameleon.engine.render(template_file, **model)`.
+
+
+# Reference
+
+- [template()](../reference/template.md)
+- [response()](../reference/response.md)

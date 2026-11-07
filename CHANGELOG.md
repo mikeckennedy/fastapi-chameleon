@@ -12,6 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `global_init()` now accepts any `os.PathLike` (such as `pathlib.Path`) as the template folder. Previously a `Path` passed validation but every render then failed inside Chameleon's loader with `TypeError: 'PosixPath' object is not iterable`.
+- The `dev` optional-dependencies extra is installable on Python 3.10 again: `great-docs` (which needs 3.11+) now carries a `python_version` marker.
+
+### Documentation
+
+- New user guide at <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html>: Getting Started, Decorating Views, Writing Templates, Friendly Error Pages, Troubleshooting, Testing and CI, Configuration, How It Works, and FAQ. Its pages are included in `llms-full.txt`.
+- Replaced the auto-generated Agent Skill with a hand-written `skills/fastapi-chameleon/SKILL.md` covering the rules of the package (init order, return contract, where `not_found()` works, TAL not Jinja) rather than only its API names.
+- Added `Example` blocks to every public docstring and an entry-point overview to the package docstring.
+- README links each section to the guide page that expands it, documents Python 3.15 support, and uses `Path` objects with `global_init()`.
+- `scripts/build_docs.py` now fails when `llms.txt`, `llms-full.txt`, or the skill files are missing from the built site.
+- The docs build requires `great-docs>=0.17` (pinned in `requirements-dev.txt`). The 0.13 release that was in the project venv silently drops the `package-info` page, the lightbox assets, and the `Llms-txt` lines in `robots.txt`.
+- `ruff.toml` limits Ruff to Python sources and skips `docs/` and `great-docs/`, because Ruff 0.17 formats code blocks inside Markdown by default and would rewrap README and SKILL.md snippets.
+- `tox.ini` adds a `py315` environment.
+- Tidied `pyproject.toml`: removed the dead `[tool.setuptools]` table and the unused `hatch-vcs` build requirement, and corrected the sdist excludes (`/example_app` never existed, so the example app, docs site, and skill were shipping in the sdist).
+
 ## [0.1.18]
 
 ### Added

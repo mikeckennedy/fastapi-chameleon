@@ -7,7 +7,7 @@ Decorate a FastAPI view to render its return value through a Chameleon template.
 Usage
 
 ``` python
-template(template_file: Optional[Union[Callable[..., R], str]] = None, mimetype: str = "text/html") -> Callable[[Callable[P, R]], Callable[P, R]]
+template(template_file: Optional[Union[Callable[..., R], str]] = None, mimetype: str = 'text/html') -> Callable[[Callable[P, R]], Callable[P, R]]
  
 template(f: Callable[P, R]) -> Callable[P, R]
 ```
@@ -24,6 +24,15 @@ Works on both sync and async view functions, and can be used three ways:
 When no template file is given, the name is inferred as `{module}/{function}` under the template folder (the module's last dotted segment and the view's name), preferring a `.html` file and falling back to `.pt`.
 
 The decorated view should return a `dict` (used as the template's variables). If it returns a `fastapi.Response` instead, the template is skipped and the response is passed through unchanged. Returning anything else raises [FastAPIChameleonException](exceptions.FastAPIChameleonException.md#fastapi_chameleon.exceptions.FastAPIChameleonException).
+
+## Examples
+
+``` python
+@app.get('/')
+@fastapi_chameleon.template('home/index.pt')
+def index():
+    return {'title': 'Home'}
+```
 
 
 ## Parameters

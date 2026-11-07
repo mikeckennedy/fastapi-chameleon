@@ -1,232 +1,101 @@
 ---
 name: fastapi-chameleon
-description: >
-  Adds integration of the Chameleon template language to FastAPI. Use when writing Python code that uses the fastapi_chameleon package.
+description: Server-rendered HTML for FastAPI using the Chameleon template language. One global_init() call plus a @template decorator turns a view that returns a dict into a rendered text/html response, and not_found() and generic_error() replace FastAPI's JSON errors with HTML pages. Use when adding fastapi-chameleon to a FastAPI app, writing or editing .pt or .html Chameleon templates (TAL, METAL, ${} syntax, not Jinja), wiring global_init() and import order, returning redirects from page views, building friendly 404 or error pages, testing decorated views with pytest, or when FastAPIChameleonException, "You must call global_init()", "Invalid return type", "Template not found", or a 500 after calling not_found() appears.
 license: MIT
-compatibility: Requires Python >=3.10.
+compatibility: Python 3.10+, FastAPI, Chameleon. No environment variables, no CLI.
 ---
 
-# FastAPI Chameleon
+# fastapi-chameleon
 
-Adds integration of the Chameleon template language to FastAPI.
+FastAPI returns JSON by default. fastapi-chameleon renders Chameleon templates instead: call `global_init(template_folder)` once at startup, decorate views with `@fastapi_chameleon.template(...)`, return a `dict`, and the view hands FastAPI a `fastapi.Response` with `text/html`. Package errors are `FastAPIChameleonException` or a subclass. Template errors come from Chameleon as `ValueError`, `NameError`, or `chameleon.exc.*`.
 
-## Installation
+## Install
 
-```bash
-pip install fastapi-chameleon
-```
+`uv add fastapi-chameleon` or `pip install fastapi-chameleon`.
 
-## When to use what
-
-| Need | Use |
-|------|-----|
-| Render a Chameleon template from a FastAPI view (sync or async) | `@fastapi_chameleon.template('home/index.pt') on the view function` |
-| Return a friendly HTML 404 page instead of FastAPI's JSON default | `fastapi_chameleon.not_found()` |
-| Render any error template with any status code (optionally with data) | `fastapi_chameleon.generic_error(template_file, status_code, template_data={...})` |
-| Build a rendered Response with a custom status code or mimetype | `fastapi_chameleon.response(template_file, mimetype=..., status_code=..., **model)` |
-| Redirect (or return JSON) from a decorated view | `return a fastapi.Response subclass — the template is skipped` |
-| Get rendered HTML as a plain string | `fastapi_chameleon.engine.render(template_file, **model)` |
-
-## API overview
-
-### Setup
-
-Point the library at your Chameleon templates folder once at app startup.
-
-- `global_init`: Initialize the Chameleon template engine for your app
-
-### Rendering views
-
-Decorate FastAPI view functions to render templates, or build a response directly.
-
-- `template`: Decorate a FastAPI view to render its return value through a Chameleon template
-- `response`: Render a template and return it as a FastAPI response directly
-
-### Error responses
-
-Short-circuit a view to render a friendly error page with the right status code.
-
-- `not_found`: Short-circuit the current view and render a friendly 404 page
-- `generic_error`: Short-circuit the current view and render an error page with a custom status code
-
-### Exceptions
-
-Exception types raised by the library (the error helpers raise these internally).
-
-- `exceptions.FastAPIChameleonException`
-- `exceptions.FastAPIChameleonNotFoundException`
-- `exceptions.FastAPIChameleonGenericException`
-
-## Gotchas
-
-1. global_init() is one-shot by default: with cache_init=True, later calls are silently ignored. Pass cache_init=False or call fastapi_chameleon.engine.clear() to re-initialize.
-2. The bare @template form resolves the template file name once, at decoration time — if global_init() hasn't run yet, the folder silently defaults to 'templates' relative to the CWD and a later global_init() won't re-resolve it.
-3. Decorated views must return a dict (the template model) or a fastapi.Response; any other return type raises FastAPIChameleonException at request time.
-4. The decorator keyword is mimetype (not content_type), and @template has no status_code parameter — use response() when you need a non-200 status.
-5. Error pages from not_found()/generic_error() always render as text/html at their own status; the decorator's mimetype does not apply.
-6. not_found() renders the 404 template with an empty model; only generic_error() can pass template_data into the error template.
-7. not_found()/generic_error() only work below a @template-decorated view — from an undecorated route or middleware the exception goes unhandled and FastAPI returns a 500.
-
-## Best practices
-
-- Call global_init(template_folder, auto_reload=dev_mode) exactly once at app startup, before view modules are imported/registered.
-- Put the route decorator outermost: @app.get(...) above @fastapi_chameleon.template(...), which sits directly on the view function.
-- Return plain dicts from views; return a fastapi.Response only for redirects and other pass-through cases.
-- Enable auto_reload only during development so templates stay cached in production.
-- Use fastapi_chameleon.response() where the decorator doesn't fit — custom status codes, non-HTML mimetypes, or rendering outside a view.
-
-## End-to-end wiring
-
-A complete, minimal app — engine init, a decorated view, and the template it renders. The `@template` path is always relative to the folder passed to `global_init()`.
+## Use
 
 ```python
-# main.py
 from pathlib import Path
 import fastapi
 import fastapi_chameleon
 
 app = fastapi.FastAPI()
+fastapi_chameleon.global_init(Path(__file__).resolve().parent / 'templates', auto_reload=dev_mode)  # before view modules are imported
 
-# Init once at startup, BEFORE any decorated view is defined.
-templates = Path(__file__).resolve().parent / 'templates'
-fastapi_chameleon.global_init(str(templates), auto_reload=True)  # auto_reload for dev only
-
-
-@app.get('/')
-@fastapi_chameleon.template('home/index.pt')   # route decorator OUTERMOST, @template just above the function
+@app.get('/')                                   # route decorator outermost
+@fastapi_chameleon.template('home/index.pt')    # path relative to the template folder
 def index():
-    return {'title': 'Home', 'items': ['a', 'b', 'c']}   # dict == the template model
+    return {'title': 'Home'}                    # dict == template variables; a fastapi.Response is passed through
 ```
 
-```html
-<!-- templates/home/index.pt -->
-<!DOCTYPE html>
-<html lang="en">
-<body>
-  <h1>${title}</h1>
-  <ul>
-    <li tal:repeat="item items">${item}</li>
-  </ul>
-</body>
-</html>
+Test form: call the view directly, `resp = index()` or `asyncio.run(index())`, and assert on `resp.status_code` and `resp.body`. Use a fixture that calls `global_init()` and `fastapi_chameleon.engine.clear()` on teardown. CI is `pytest` per interpreter, no extras.
+
+## Rules
+
+- `global_init()` runs once. A second call is ignored unless `cache_init=False` or `engine.clear()` was called first, so you cannot change `auto_reload` by calling it again.
+- Call `global_init()` before importing view modules. Bare `@template` infers `{module}/{function}.html` then `.pt` at import time, and if the engine is not initialised yet the folder silently defaults to `templates` under the current working directory and is never re-resolved.
+- Views return a `dict` or a `fastapi.Response`. Anything else, including `None` and Pydantic models, raises `FastAPIChameleonException` at request time. Use `model.model_dump()`.
+- Returning any `fastapi.Response` skips the template. That is how redirects work from page views.
+- `not_found()` and `generic_error()` always raise. They only work below a `@template`-decorated view. From an undecorated route, a dependency, or middleware they become a plain 500; raise `fastapi.HTTPException` there instead.
+- `not_found()` renders `errors/404.pt` with an empty model. Only `generic_error()` accepts `template_data`.
+- Error pages are always `text/html` at their own status. The decorator's `mimetype` does not apply to them.
+- The decorator has no `status_code` parameter. A rendered dict is always 200. Use `response(...)` for other codes.
+- Templates are TAL, not Jinja. `${expr}` interpolates and is escaped, `tal:repeat`, `tal:condition`, `tal:content`, `tal:attributes` control flow, `metal:use-macro="load: ../shared/layout.pt"` with `metal:fill-slot` does layouts. There is no `{% %}` or `{{ }}`.
+- `.pt` and `.html` are treated identically by Chameleon. Inference prefers `.html`.
+- Dependency injection keeps working on decorated views, sync or async. Path and query parameters, `Request`, and `Depends()` resolve as normal.
+- Templates are compiled once per process unless `auto_reload=True`. Keep it off in production.
+- `global_init()` accepts `str` or any `os.PathLike`. Versions up to 0.1.18 accepted a `Path` but failed later with `TypeError: 'PosixPath' object is not iterable`; use `str()` there.
+
+## Decision table
+
+| Need | Use |
+|---|---|
+| Render a template from a sync or async view | `@fastapi_chameleon.template('home/index.pt')` on the view |
+| Infer the template from module and function name | bare `@fastapi_chameleon.template` after `global_init()` has run |
+| Redirect or return JSON from a page view | return a `fastapi.Response` subclass |
+| HTML 404 instead of FastAPI's JSON | `fastapi_chameleon.not_found()` or `not_found('errors/custom.pt')` |
+| Any error status with data in the template | `fastapi_chameleon.generic_error('errors/403.pt', 403, template_data={...})` |
+| Non-200 status or non-HTML type from a normal view | `fastapi_chameleon.response(template_file, mimetype=..., status_code=..., **model)` |
+| Non-HTML type for a decorated view | `@template('seo/sitemap.pt', mimetype='application/xml')` |
+| Rendered HTML as a string | `fastapi_chameleon.engine.render(template_file, **model)` |
+| Pick up template edits without restart | `global_init(folder, auto_reload=True)` |
+| Re-initialise in tests | `global_init(folder, cache_init=False)` or `engine.clear()` |
+
+## API
+
+- `global_init(template_folder: str | os.PathLike, auto_reload: bool = False, cache_init: bool = True) -> None`. Raises `FastAPIChameleonException` for an empty or non-directory path. Idempotent by default.
+- `template(template_file: str | None = None, mimetype: str = 'text/html')`. Decorator, usable bare or with arguments. Returns a signature-preserving wrapper.
+- `response(template_file: str, mimetype: str = 'text/html', status_code: int = 200, **template_data) -> fastapi.Response`. Manual render. Raises `FastAPIChameleonException` if not initialised.
+- `not_found(four04template_file: str = 'errors/404.pt') -> NoReturn`. Raises `FastAPIChameleonNotFoundException`.
+- `generic_error(template_file: str, status_code: int, template_data: dict | None = None) -> NoReturn`. Raises `FastAPIChameleonGenericException`.
+- `engine.render(template_file: str, **template_data) -> str` and `engine.clear() -> None`. Not in `__all__`; import via `fastapi_chameleon.engine`.
+- `exceptions.FastAPIChameleonException` (base), `FastAPIChameleonNotFoundException` (`.template_file`), `FastAPIChameleonGenericException` (`.template_file`, `.status_code`, `.template_data`).
+
+## Reading a failure
+
+```text
+fastapi_chameleon.exceptions.FastAPIChameleonException: Invalid return type <class 'NoneType'>, we expected a dict or fastapi.Response as the return value.
+    -> the view has no return statement, or returned a model; return a dict
+ValueError: Template not found: home/index.pt.
+    -> path is relative to the global_init() folder; check folder, subfolder, .pt vs .html, and that global_init() ran before the view module was imported
+NameError: items
+    -> the template uses a variable the view did not return; add it to the dict or guard with tal:condition
+INFO: 127.0.0.1 - "GET /items/9" 500   (log: FastAPIChameleonNotFoundException: The URL resulted in a 404 response.)
+    -> not_found() was called outside a @template-decorated view; decorate the route or raise fastapi.HTTPException
 ```
 
-The decorator is signature-transparent (ParamSpec overloads + `functools.wraps`), so FastAPI dependency injection — `Request`, path/query params, `Depends(...)` — keeps working on decorated views, sync or async.
-
-## Chameleon template syntax (this is TAL, not Jinja)
-
-Chameleon templates are valid XML/HTML where directives live in `tal:`, `metal:`, and `i18n:` attributes. There is no `{% ... %}` or `{{ ... }}` — do not use Jinja/Django syntax. Interpolation uses `${ ... }` and may contain arbitrary Python expressions.
-
-```html
-<!-- Interpolation: any Python expression inside ${ } -->
-<h1>Hello, ${user.name.title()}!</h1>
-<p>You have ${len(items)} item(s).</p>
-
-<!-- Loop -->
-<li tal:repeat="item items">${item.name} — ${item.price}</li>
-
-<!-- The repeat variable exposes index/number/even/odd/first/last -->
-<li tal:repeat="item items" tal:attributes="class 'odd' if repeat.item.odd else 'even'">
-  ${repeat.item.number}. ${item}
-</li>
-
-<!-- Condition (element is omitted entirely when falsy) -->
-<div tal:condition="user">Welcome back, ${user.name}.</div>
-<div tal:condition="not user">Please sign in.</div>
-
-<!-- Set element content / replace whole element -->
-<span tal:content="message">placeholder shown only in a browser preview</span>
-<span tal:replace="formatted_date">2024-01-01</span>
-
-<!-- Set attributes (semicolon-separated); escaping is automatic -->
-<a tal:attributes="href item.url; class item.css_class">${item.name}</a>
-
-<!-- Define a reusable local variable -->
-<span tal:define="total sum(i.price for i in items)">Total: ${total}</span>
-```
-
-Escaping is on by default (`${expr}` is HTML-escaped). Use `structure:` to emit already-safe HTML without escaping: `<div tal:content="structure: raw_html"></div>`.
-
-## Shared layouts with METAL macros
-
-METAL is how Chameleon does template inheritance / partials — the equivalent of Jinja's `{% extends %}`/`{% block %}`.
-
-```html
-<!-- templates/shared/layout.pt -->
-<html metal:define-macro="layout">
-  <head><title>${title}</title></head>
-  <body>
-    <main metal:define-slot="content">default content</main>
-  </body>
-</html>
-```
-
-```html
-<!-- templates/home/index.pt -->
-<div metal:use-macro="load: ../shared/layout.pt">
-  <div metal:fill-slot="content">
-    <h1>${title}</h1>
-  </div>
-</div>
-```
-
-## Template resolution & project layout
-
-With an explicit path (`@template('catalog/item.pt')`) the string is resolved relative to the `global_init()` folder. With the bare form (`@template` or `@template()`) the path is derived **once at decoration time** as `{last segment of module}/{function_name}.html`, falling back to `.pt` if the `.html` file does not exist on disk.
-
-```
-my_app/
-├── main.py                # global_init() here, before views are imported/defined
-├── views/
-│   └── home.py            # def index(...)  ->  bare @template looks for home/index.html|.pt
-├── templates/
-│   ├── home/index.pt
-│   ├── errors/404.pt      # default target of not_found()
-│   └── shared/layout.pt   # METAL macros
-└── static/
-```
-
-## Redirects and pass-through responses
-
-Return any `fastapi.Response` subclass from a decorated view and the template is skipped entirely — the idiomatic shape for POST/redirect/GET flows:
-
-```python
-@router.post('/account/login')
-@fastapi_chameleon.template('account/login.pt')
-async def login(request: fastapi.Request):
-    user = await try_login(request)
-    if user:
-        return fastapi.responses.RedirectResponse('/account', status_code=302)
-    return {'error': 'Invalid login'}  # falls through: re-render the form with an error
-```
-
-## Friendly error pages from anywhere below a view
-
-`not_found()` and `generic_error()` are exception-based control flow: they always raise, the `@template` decorator catches, so they work from deep in a service or data layer — as long as a decorated view is above them on the call stack. FastAPI's default 404 is JSON; this is how you get an HTML error page instead.
-
-```python
-@router.get('/catalog/item/{item_id}')
-@fastapi_chameleon.template('catalog/item.pt')
-async def item(item_id: int):
-    item = service.get_item_by_id(item_id)   # service may call not_found() itself
-    if not item:
-        fastapi_chameleon.not_found()        # renders errors/404.pt at 404, empty model
-    return item.dict()
-
-# Any status code, with data for the error template:
-fastapi_chameleon.generic_error('errors/500.pt', 500, template_data={'detail': 'Something went sideways.'})
-```
-
-`not_found()` renders its template with an **empty** model; only `generic_error()` can pass `template_data` through. Both render as `text/html` regardless of the decorator's `mimetype`.
-
-## Fetching the docs as Markdown
-
-Every page on the documentation site has a plain-Markdown twin: swap the `.html` extension for `.md` to get token-efficient source without the site chrome. For example https://mkennedy.codes/docs/fastapi-chameleon/reference/template.html is also available at https://mkennedy.codes/docs/fastapi-chameleon/reference/template.md. Prefer the `.md` form when reading these docs programmatically.
-
+Fix order: make `global_init()` run once and first with an absolute path, then make the view return a dict, then fix the template path, then read the variable or expression Chameleon names.
 
 ## Resources
 
-- [Full documentation](https://mkennedy.codes/docs/fastapi-chameleon/)
-- [llms.txt](llms.txt) — Indexed API reference for LLMs
-- [llms-full.txt](llms-full.txt) — Comprehensive documentation for LLMs
-- [Source code](https://github.com/mikeckennedy/fastapi-chameleon)
+- Docs: <https://mkennedy.codes/docs/fastapi-chameleon/>
+- Getting started: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html>
+- Decorating views: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/views.html>
+- Writing templates: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/templates.html>
+- Error pages: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/error-pages.html>
+- Troubleshooting: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/troubleshooting.html>
+- Testing and CI: <https://mkennedy.codes/docs/fastapi-chameleon/user-guide/testing.html>
+- API reference: <https://mkennedy.codes/docs/fastapi-chameleon/reference/>
+- llms.txt: <https://mkennedy.codes/docs/fastapi-chameleon/llms.txt>, llms-full.txt: <https://mkennedy.codes/docs/fastapi-chameleon/llms-full.txt>
+- Source: <https://github.com/mikeckennedy/fastapi-chameleon>

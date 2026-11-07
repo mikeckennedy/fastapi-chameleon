@@ -31,15 +31,28 @@ def template(
 def template(f: Callable[P, R]) -> Callable[P, R]: ...
 
 
-def global_init(template_folder: str, auto_reload: bool = False, cache_init: bool = True) -> None:
+def global_init(
+    template_folder: Union[str, 'os.PathLike[str]'], auto_reload: bool = False, cache_init: bool = True
+) -> None:
     """
     Initialize the Chameleon template engine for your app.
 
     Call this once at startup, pointing it at the folder that holds your ``*.pt``
     templates. Template paths used elsewhere (in ``template()``, ``response()``,
     ``not_found()``, and ``generic_error()``) are resolved relative to this folder.
+    Call it before the modules that define decorated views are imported, so that
+    template name inference sees the right folder.
 
-    :param str template_folder: Path to the folder containing your Chameleon templates.
+    Example::
+
+        from pathlib import Path
+        import fastapi_chameleon
+
+        templates = Path(__file__).resolve().parent / 'templates'
+        fastapi_chameleon.global_init(templates, auto_reload=dev_mode)
+
+    :param template_folder: Path to the folder containing your Chameleon templates, as a
+        ``str`` or any ``os.PathLike`` such as ``pathlib.Path``.
     :param bool auto_reload: Reload templates from disk when they change. Handy in
         development; leave ``False`` in production. Defaults to ``False``.
     :param bool cache_init: When ``True`` (the default), a second call is a no-op once
@@ -56,12 +69,16 @@ def global_init(template_folder: str, auto_reload: bool = False, cache_init: boo
         msg = 'The template_folder must be specified.'
         raise FastAPIChameleonException(msg)
 
-    if not os.path.isdir(template_folder):
-        msg = f"The specified template folder must be a folder, it's not: {template_folder}"
+    # Chameleon's loader iterates the search path, so a pathlib.Path (which is iterable
+    # over nothing) would be accepted here and fail later with an opaque TypeError.
+    folder = os.fspath(template_folder)
+
+    if not os.path.isdir(folder):
+        msg = f"The specified template folder must be a folder, it's not: {folder}"
         raise FastAPIChameleonException(msg)
 
-    template_path = template_folder
-    __templates = PageTemplateLoader(template_folder, auto_reload=auto_reload)
+    template_path = folder
+    __templates = PageTemplateLoader(folder, auto_reload=auto_reload)
 
 
 def clear() -> None:
@@ -70,6 +87,14 @@ def clear() -> None:
 
     Primarily a test-isolation hook -- call it between tests (or before a fresh
     ``global_init()``) so engine state does not leak across them.
+
+    Example::
+
+        @pytest.fixture
+        def templates():
+            fastapi_chameleon.global_init('tests/templates')
+            yield
+            fastapi_chameleon.engine.clear()
     """
     global __templates, template_path
     __templates = None
@@ -79,6 +104,10 @@ def clear() -> None:
 def render(template_file: str, **template_data) -> str:
     """
     Render a template to a string using the configured engine.
+
+    Example::
+
+        html = fastapi_chameleon.engine.render('email/welcome.pt', name='Sam')
 
     :param str template_file: The Chameleon template file to render (path relative to
         the template folder).
@@ -102,6 +131,12 @@ def response(
     Use this when you want a rendered ``Response`` without the ``template()``
     decorator, for example to return a fully-formed response from a view that does
     its own branching. Requires ``global_init()`` to have been called first.
+
+    Example::
+
+        @app.get('/sitemap.xml')
+        def sitemap():
+            return fastapi_chameleon.response('seo/sitemap.pt', mimetype='application/xml', urls=load_urls())
 
     :param str template_file: The Chameleon template file to render (path relative to
         the template folder, ``*.pt``).
@@ -134,6 +169,13 @@ def template(template_file: Optional[Union[Callable[..., R], str]] = None, mimet
     it returns a ``fastapi.Response`` instead, the template is skipped and the response
     is passed through unchanged. Returning anything else raises
     ``FastAPIChameleonException``.
+
+    Example::
+
+        @app.get('/')
+        @fastapi_chameleon.template('home/index.pt')
+        def index():
+            return {'title': 'Home'}
 
     :param template_file: The Chameleon template file (path relative to the template
         folder). Omit it (or pass ``None``) to infer the name from the view. In the bare
@@ -252,6 +294,16 @@ def not_found(four04template_file: str = 'errors/404.pt') -> NoReturn:
     404 response rendered from ``four04template_file``. This function never returns
     normally.
 
+    Example::
+
+        @app.get('/items/{item_id}')
+        @fastapi_chameleon.template('catalog/item.pt')
+        def item(item_id: int):
+            item = repo.get(item_id)
+            if not item:
+                fastapi_chameleon.not_found()
+            return {'item': item}
+
     :param str four04template_file: The template to render for the 404 response (path
         relative to the template folder). Defaults to ``errors/404.pt``.
     :raises FastAPIChameleonNotFoundException: Always; this is how the 404 is signalled
@@ -273,6 +325,11 @@ def generic_error(template_file: str, status_code: int, template_data: Optional[
     ``template()``-decorated view to render ``template_file`` with the HTTP
     ``status_code`` you choose (for example ``401`` or ``500``). The decorator catches
     the raised exception and builds the response. This function never returns normally.
+
+    Example::
+
+        if not user.is_admin:
+            fastapi_chameleon.generic_error('errors/403.pt', 403, template_data={'user': user})
 
     :param str template_file: The error template to render (path relative to the
         template folder).
