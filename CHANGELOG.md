@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.19] - 2026-11-07
+
 ### Fixed
 
 - `global_init()` now accepts any `os.PathLike` (such as `pathlib.Path`) as the template folder. Previously a `Path` passed validation but every render then failed inside Chameleon's loader with `TypeError: 'PosixPath' object is not iterable`.
@@ -29,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `tox.ini` adds a `py315` environment.
 - Tidied `pyproject.toml`: removed the dead `[tool.setuptools]` table and the unused `hatch-vcs` build requirement, and corrected the sdist excludes (`/example_app` never existed, so the example app, docs site, and skill were shipping in the sdist).
 
-## [0.1.18]
+## [0.1.18] - 2026-06-11
 
 ### Added
 
@@ -56,10 +58,65 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   friendly-error and view-testing guides, dev-mode/caching notes, a docs badge,
   and corrected example-app and contributing instructions.
 
-## [0.1.17]
+## [0.1.17] - 2025-04-04
 
-- Baseline release prior to the documentation and typing work above.
+### Changed
 
-[Unreleased]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.18...HEAD
+- The `template()` decorator passes type information through to the wrapped view, removing errors reported by pyright and other type checkers on decorated FastAPI routes.
+
+## [0.1.16] - 2024-11-10
+
+### Added
+
+- `generic_error()` accepts `template_data` so error templates can render dynamic content (#26, PR #27 by VLPatton).
+- Example FastAPI app under `example/`.
+
+### Changed
+
+- Packaging moved from `setup.py` to `pyproject.toml` with the hatchling backend.
+- Ruff adopted for linting and formatting; classifiers and tox environments updated for current Python versions.
+
+## [0.1.14] - 2023-02-11
+
+### Added
+
+- `generic_error(template_file, status_code)`: render any error template with a chosen HTTP status code, the general form of `not_found()`. Exported from the package, including `from fastapi_chameleon import *`.
+
+### Fixed
+
+- The package build locates the requirements file again.
+
+## [0.1.12] - 2021-10-12
+
+### Changed
+
+- Added type information to several more return types in the engine.
+
+## [0.1.11] - 2021-07-30
+
+### Changed
+
+- README documents the friendly 404 feature introduced in 0.1.10. No code changes.
+
+## [0.1.10] - 2021-07-30
+
+### Added
+
+- Friendly 404 pages: call `not_found()` from anywhere below a decorated view to render a 404 template (`errors/404.pt` by default) instead of FastAPI's JSON error.
+
+## [0.1.9] - 2021-07-27
+
+First release published to PyPI (#10). Adds Chameleon template rendering to FastAPI via `global_init()` and the `@template` decorator, with convention-based template lookup (`{module}/{function}.html`, falling back to `.pt`).
+
+Versions 0.1.13 and 0.1.15 were bumped in source but never uploaded to PyPI.
+
+[Unreleased]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.19...HEAD
+[0.1.19]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.18...v0.1.19
 [0.1.18]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.17...v0.1.18
-[0.1.17]: https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.17
+[0.1.17]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.16...v0.1.17
+[0.1.16]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.14...v0.1.16
+[0.1.14]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.12...v0.1.14
+[0.1.12]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.11...v0.1.12
+[0.1.11]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.10...v0.1.11
+[0.1.10]: https://github.com/mikeckennedy/fastapi-chameleon/compare/v0.1.9...v0.1.10
+[0.1.9]: https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.9

@@ -1,6 +1,6 @@
 [project]
 name = "fastapi_chameleon"
-version = "0.1.18"
+version = "0.1.19"
 description = "Adds integration of the Chameleon template language to FastAPI."
 readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
