@@ -103,7 +103,7 @@ ul.task-list li input[type="checkbox"] {
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">FastAPI Chameleon <span class="version-badge" title="Released 2026-06-11">v0.1.18</span></span>
+    <span class="navbar-title">FastAPI Chameleon <span class="version-badge" title="Released 2026-11-07">v0.1.19</span></span>
     </a>
   </div>
             <div id="quarto-search" class=""></div>
@@ -147,9 +147,19 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#v0.1.18" id="toc-v0.1.18" class="nav-link active" data-scroll-target="#v0.1.18">v0.1.18</a>
+  <li><a href="#v0.1.19" id="toc-v0.1.19" class="nav-link active" data-scroll-target="#v0.1.19">v0.1.19</a>
   <ul class="collapse">
-  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">[0.1.18]</a></li>
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">[0.1.19]</a></li>
+  </ul></li>
+  <li><a href="#v0.1.16" id="toc-v0.1.16" class="nav-link" data-scroll-target="#v0.1.16">v0.1.16</a></li>
+  <li><a href="#v0.1.14" id="toc-v0.1.14" class="nav-link" data-scroll-target="#v0.1.14">v0.1.14</a></li>
+  <li><a href="#v0.1.12" id="toc-v0.1.12" class="nav-link" data-scroll-target="#v0.1.12">v0.1.12</a></li>
+  <li><a href="#v0.1.11" id="toc-v0.1.11" class="nav-link" data-scroll-target="#v0.1.11">v0.1.11</a></li>
+  <li><a href="#v0.1.10" id="toc-v0.1.10" class="nav-link" data-scroll-target="#v0.1.10">v0.1.10</a></li>
+  <li><a href="#v0.1.9" id="toc-v0.1.9" class="nav-link" data-scroll-target="#v0.1.9">v0.1.9</a></li>
+  <li><a href="#v0.1.18" id="toc-v0.1.18" class="nav-link" data-scroll-target="#v0.1.18">v0.1.18</a>
+  <ul class="collapse">
+  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">[0.1.18]</a></li>
   </ul></li>
   <li><a href="#v0.1.17" id="toc-v0.1.17" class="nav-link" data-scroll-target="#v0.1.17">v0.1.17</a></li>
   </ul>
@@ -178,13 +188,117 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>This changelog is generated automatically from <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases">GitHub Releases</a>.</p>
+<section id="v0.1.19" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.19</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.19">GitHub</a></p>
+<section id="section" class="level2">
+<h2 class="anchored" data-anchor-id="section">[0.1.19]</h2>
+<section id="fixed" class="level3">
+<h3 class="anchored" data-anchor-id="fixed">Fixed</h3>
+<ul>
+<li><a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> now accepts any <code>os.PathLike</code> (such as <code>pathlib.Path</code>) as the template folder. Previously a <code>Path</code> passed validation but every render then failed inside Chameleon’s loader with <code>TypeError: 'PosixPath' object is not iterable</code>.</li>
+<li>The <code>dev</code> optional-dependencies extra is installable on Python 3.10 again: <code>great-docs</code> (which needs 3.11+) now carries a <code>python_version</code> marker.</li>
+</ul>
+</section>
+<section id="documentation" class="level3">
+<h3 class="anchored" data-anchor-id="documentation">Documentation</h3>
+<ul>
+<li>New user guide at <a href="https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html" class="uri">https://mkennedy.codes/docs/fastapi-chameleon/user-guide/getting-started.html</a>: Getting Started, Decorating Views, Writing Templates, Friendly Error Pages, Troubleshooting, Testing and CI, Configuration, How It Works, and FAQ. Its pages are included in <code>llms-full.txt</code>.</li>
+<li>Replaced the auto-generated Agent Skill with a hand-written <code>skills/fastapi-chameleon/SKILL.md</code> covering the rules of the package (init order, return contract, where <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> works, TAL not Jinja) rather than only its API names.</li>
+<li>Added <code>Example</code> blocks to every public docstring and an entry-point overview to the package docstring.</li>
+<li>README links each section to the guide page that expands it, documents Python 3.15 support, and uses <code>Path</code> objects with <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>.</li>
+<li><code>scripts/build_docs.py</code> now fails when <code>llms.txt</code>, <code>llms-full.txt</code>, or the skill files are missing from the built site.</li>
+<li>The docs build requires <code>great-docs&gt;=0.17</code> (pinned in <code>requirements-dev.txt</code>). The 0.13 release that was in the project venv silently drops the <code>package-info</code> page, the lightbox assets, and the <code>Llms-txt</code> lines in <code>robots.txt</code>.</li>
+<li><code>ruff.toml</code> limits Ruff to Python sources and skips <code>docs/</code> and <code>great-docs/</code>, because Ruff 0.17 formats code blocks inside Markdown by default and would rewrap README and SKILL.md snippets.</li>
+<li><code>tox.ini</code> adds a <code>py315</code> environment.</li>
+<li>Tidied <code>pyproject.toml</code>: removed the dead <code>[tool.setuptools]</code> table and the unused <code>hatch-vcs</code> build requirement, and corrected the sdist excludes (<code>/example_app</code> never existed, so the example app, docs site, and skill were shipping in the sdist).</li>
+</ul>
+</section>
+</section>
+</section>
+<section id="v0.1.16" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.16</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.16">GitHub</a></p>
+<section id="added" class="level3">
+<h3 class="anchored" data-anchor-id="added">Added</h3>
+<ul>
+<li><a href="reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a> accepts <code>template_data</code> so error templates can render dynamic content (<a href="https://github.com/mikeckennedy/fastapi-chameleon/issues/26">#26</a>, PR <a href="https://github.com/mikeckennedy/fastapi-chameleon/issues/27">#27</a> by VLPatton).</li>
+<li>Example FastAPI app under <code>example/</code>.</li>
+</ul>
+</section>
+<section id="changed" class="level3">
+<h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<ul>
+<li>Packaging moved from <code>setup.py</code> to <code>pyproject.toml</code> with the hatchling backend.</li>
+<li>Ruff adopted for linting and formatting; classifiers and tox environments updated for current Python versions.</li>
+</ul>
+<p>Note: 0.1.13 and 0.1.15 were bumped in source but never uploaded to PyPI.</p>
+<p><em>Backfilled release record. Published to PyPI on 2024-11-10.</em></p>
+</section>
+</section>
+<section id="v0.1.14" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.14</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.14">GitHub</a></p>
+<section id="added-1" class="level3">
+<h3 class="anchored" data-anchor-id="added-1">Added</h3>
+<ul>
+<li><code>generic_error(template_file, status_code)</code>: render any error template with a chosen HTTP status code, the general form of <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a>. Exported from the package (including <code>from fastapi_chameleon import *</code>).</li>
+</ul>
+</section>
+<section id="changed-1" class="level3">
+<h3 class="anchored" data-anchor-id="changed-1">Changed</h3>
+<ul>
+<li>Build fix: the package build locates the requirements file again.</li>
+</ul>
+<p><em>Backfilled release record. Published to PyPI on 2023-02-11.</em></p>
+</section>
+</section>
+<section id="v0.1.12" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.12</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.12">GitHub</a></p>
+<section id="changed-2" class="level3">
+<h3 class="anchored" data-anchor-id="changed-2">Changed</h3>
+<ul>
+<li>Added type information to several more return types in the engine.</li>
+</ul>
+<p><em>Backfilled release record. Published to PyPI on 2021-10-12.</em></p>
+</section>
+</section>
+<section id="v0.1.11" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.11</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.11">GitHub</a></p>
+<section id="changed-3" class="level3">
+<h3 class="anchored" data-anchor-id="changed-3">Changed</h3>
+<ul>
+<li>README documents the friendly 404 feature introduced in 0.1.10. No code changes.</li>
+</ul>
+<p><em>Backfilled release record. Published to PyPI on 2021-07-30.</em></p>
+</section>
+</section>
+<section id="v0.1.10" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.10</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.10">GitHub</a></p>
+<section id="added-2" class="level3">
+<h3 class="anchored" data-anchor-id="added-2">Added</h3>
+<ul>
+<li>Friendly 404 pages: call <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> from anywhere below a decorated view to render a 404 template (<code>errors/404.pt</code> by default) instead of FastAPI’s JSON error.</li>
+</ul>
+<p><em>Backfilled release record. Published to PyPI on 2021-07-30.</em></p>
+</section>
+</section>
+<section id="v0.1.9" class="level1 changelog-version">
+<h1 class="changelog-version">v0.1.9</h1>
+<p><em>2026-11-07</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.9">GitHub</a></p>
+<p>First release published to PyPI (closes <a href="https://github.com/mikeckennedy/fastapi-chameleon/issues/10">#10</a>). Adds Chameleon template rendering to FastAPI via <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a> and the <code>[@template](https://github.com/template)</code> decorator, with convention-based template lookup (<code>{module}/{function}.html</code>, falling back to <code>.pt</code>).</p>
+<p><em>Backfilled release record. Published to PyPI on 2021-07-27.</em></p>
+</section>
 <section id="v0.1.18" class="level1 changelog-version">
 <h1 class="changelog-version">v0.1.18</h1>
 <p><em>2026-06-11</em> · <a href="https://github.com/mikeckennedy/fastapi-chameleon/releases/tag/v0.1.18">GitHub</a></p>
-<section id="section" class="level2">
-<h2 class="anchored" data-anchor-id="section">[0.1.18]</h2>
-<section id="added" class="level3">
-<h3 class="anchored" data-anchor-id="added">Added</h3>
+<section id="section-1" class="level2">
+<h2 class="anchored" data-anchor-id="section-1">[0.1.18]</h2>
+<section id="added-3" class="level3">
+<h3 class="anchored" data-anchor-id="added-3">Added</h3>
 <ul>
 <li>Ship inline type information to consumers via a <code>py.typed</code> marker (PEP 561), so downstream type checkers can see the package’s annotations.</li>
 <li>New <code>dev</code> optional-dependencies extra (<code>pip install fastapi-chameleon[dev]</code>) bundling <code>pytest</code>, <code>ty</code>, and <code>pyrefly</code>.</li>
@@ -192,8 +306,8 @@ ul.task-list li input[type="checkbox"] {
 <li>Expanded PyPI keywords for better discoverability (templating, rendering, decorator, ASGI, Starlette, and more).</li>
 </ul>
 </section>
-<section id="changed" class="level3">
-<h3 class="anchored" data-anchor-id="changed">Changed</h3>
+<section id="changed-4" class="level3">
+<h3 class="anchored" data-anchor-id="changed-4">Changed</h3>
 <ul>
 <li>Tightened type hints across the public API so the package now passes both <code>ty</code> and <code>pyrefly</code> cleanly: <code>NoReturn</code> on <a href="reference/not_found.html#fastapi_chameleon.not_found" class="gdls-link gdls-code">not_found()</a> / <a href="reference/generic_error.html#fastapi_chameleon.generic_error" class="gdls-link gdls-code">generic_error()</a>, typed decorator wrappers and casts, and annotations on <a href="reference/global_init.html#fastapi_chameleon.global_init" class="gdls-link gdls-code">global_init()</a>, <code>clear()</code>, and <a href="reference/response.html#fastapi_chameleon.response" class="gdls-link gdls-code">response()</a>.</li>
 <li>Removed the inaccurate <code>dict</code> element type on <code>**template_data</code>.</li>
